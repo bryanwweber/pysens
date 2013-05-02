@@ -1,9 +1,9 @@
 import re
 from decimal import Decimal
 
-norxns = 2072
+norxns = 1593
 
-inputfile = open('chem.inp','r')
+inputfile = open('nc5_49_mech.inp','r')
 lines = inputfile.readlines()
 inputfile.close()
 outputfile = open('test.txt','w')
@@ -12,6 +12,7 @@ reactions = [x+1 for x in range(norxns)]
 reactionsmatch = re.compile(r'(?i)^\bREACTIONS\b|\bREAC\b')
 newlinematch = re.compile(r'^\n')
 commentmatch = re.compile(r'^!')
+inlinecommatch = re.compile(r'.\!')
 slashmatch = re.compile(r'/')
 lowmatch = re.compile(r'(?i)^[\s]*LOW')
 highmatch = re.compile(r'(?i)^[\s]*HIGH')
@@ -40,13 +41,17 @@ for work in lines[startline:]:
     skip3 = slashmatch.search(work)
     skip4 = dupmatch.search(work)
     skip5 = endmatch.search(work)
-    if skip3:
+    com = inlinecommatch.search(work)
+    if skip3 and not skip2 and com:
+##        print(skip3,skip2,com)
         rever = work[::-1]
-##        print(rever)
-        comslash = re.search(r'/(?!.*\!)',rever)
+##        print(line,rever)
+        comslash = re.search(r'/(?=.*\!)(?!.*/)',rever)
         if comslash:
             skip3 = False
-            print(line, work)
+##            print(rever)
+##        else:
+##            print(rever)
     if not skip1 and not skip2 and not skip3 and not skip4 and not skip5:
 ##        lowline = line+1
 ##        print(reaction)
@@ -106,9 +111,9 @@ for lstart in range(len(reaclines)-1):
 ##    outputfile.write(item)
 ##for number in range(norxns):
 ##    if extrainfo[number]:
-##        print(number,'Extra Info')
+##        print(number,'Extra Info',extrainfo[number])
 
-##    print(searchlines)
+##print(searchlines)
 
 ##print(lines[reaclines[0]])      
 ##print(reaction)
