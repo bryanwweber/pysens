@@ -27,7 +27,7 @@ def mechinterp(lines, numRxns):
     #Compile regular expressions for each of the expected keywords to be
     #encountered. (?i) indicates ignore case.
     #
-    reactionmatch = re.compile(r'=(?!.*\!)')
+    reactionmatch = re.compile(r'=(?!.*\!)') #Match any equals signs not followed by an exclamation point
     commentmatch = re.compile(r'^\!') # Match exclamation points at the beginning of the string
     newlinematch = re.compile(r'^\n') # Match newlines if they're the first character in the string
     lowmatch = re.compile(r'(?i)^[\s]*LOW')
@@ -52,6 +52,14 @@ def mechinterp(lines, numRxns):
     #stored in the variable 'line' for each iteration.
     #
     for lineNum in range(len(lines)):
+        #
+        #We have to reverse the line to properly check for a reaction.
+        #This eliminates the case where an auxiliary line may contain
+        #an = sign in a comment, which would otherwise be included in
+        #the reaction list. Since Python does not allow variable length
+        #look behind, the workaround is to reverse the string and use
+        #variable length look ahead.
+        #
         line = lines[lineNum][::-1]
         #
         #Check for lines that are reactions, defined by the
