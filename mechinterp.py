@@ -1,10 +1,19 @@
-def mechinterp(filename, numRxns):
+def mechinterp(lines, numRxns):
     """Interpret CHEMKIN chemistry input files and return lists of line numbers and reaction info.
 
     INPUT:
-    filename - string, mechanism input file
-    norxns - integer, number of reactions in the input mechanims
+    lines - list of strings, lines of the CHEMKIN format chemistry input file
+    numRxns - integer, number of reactions in the input mechanims
     OUTPUT:
+    reacLines - list of integers, line numbers of reactions in the input set of lines
+    searchLines - list of lists of integers, line numbers of the lines between the reactions
+    extraInfo - list of integers, status of auxiliary information for a reaction
+                0 - no auxiliary information
+                1 - LOW parameter specified
+                2 - HIGH parameter specified
+                3 - REV reaction specified
+                4 - PLOG reaction specified
+                5 - CHEB reaction specified
     
     """
 #
@@ -15,18 +24,10 @@ def mechinterp(filename, numRxns):
     #
     import re
     #
-    #Open, read, and close the input file, storing the lines of the
-    #input file in the list 'lines'.
-    #
-    inputfile = open(filename,'r')
-    lines = inputfile.readlines()
-    inputfile.close()
-    #
     #Compile regular expressions for each of the expected keywords to be
     #encountered. (?i) indicates ignore case.
     #
-    startmatch = re.compile(r'(?i)^\bREACTIONS\b|\bREAC\b')
-    reactionmatch = re.compile(r'=|=>|<=>')
+    reactionmatch = re.compile(r'=(?!.*\!)')
     commentmatch = re.compile(r'^\!') # Match exclamation points at the beginning of the string
     newlinematch = re.compile(r'^\n') # Match newlines if they're the first character in the string
     lowmatch = re.compile(r'(?i)^[\s]*LOW')
@@ -51,27 +52,23 @@ def mechinterp(filename, numRxns):
     #stored in the variable 'line' for each iteration.
     #
     for lineNum in range(len(lines)):
-        line = lines[lineNum]
+        line = lines[lineNum][::-1]
         #
-        #Check the line for being a comment  or one of the three ways
-        #to define the a reaction
-        #
+        #Check for lines that are reactions, defined by the
+        #reactionmatch regular expression
         rxncond = reactionmatch.search(line)
-        comcond = commentmatch.search(line)
         #
-        #If the reaction condition contains information and the comment
-        #condition contains no information, the line is a reaction. Put
-        #the line number of this reaction in the 'reacLines' list, and
-        #increment the reaction counter. Remember that since Python is
-        #zero-based, the reaction number of a reaction will be one more
-        #than the number from this loop
+        #If the reaction condition contains information the line is a 
+        #reaction. Put the line number of this reaction in the 
+        #'reacLines' list, and increment the reaction counter. Remember 
+        #that since Python is zero-based, the reaction number of a
+        # reaction will be one more than the number from this loop
         #
-        if rxncond is not None and comcond is None:
+        if rxncond is not None:
             reacLines[reactionNum] = lineNum
             reactionNum += 1
         #
-        #Check if the end line has been reached. If it has, add the line
-        #number to the end of the reaclines list.
+        #End if
         #
     #
     #End loop
@@ -86,7 +83,7 @@ def mechinterp(filename, numRxns):
     extraInfo = [0]*numRxns
     #
     #Begin loop to find and read all of the lines between each reaction
-    #to check for auxilliary information.
+    #to check for auxiliary information.
     #
     for i in range(len(reacLines)-1):
         #
@@ -100,7 +97,7 @@ def mechinterp(filename, numRxns):
         searchLines[i] = list(range(reacLines[i]+1,reacLines[i+1]))
         #
         #Loop over the line numbers in the ith element of 'searchLines'
-        #to look for auxillary information.
+        #to look for auxiliary information.
         #
         for lineNum in searchLines[i]:
             line = lines[lineNum]
@@ -112,7 +109,7 @@ def mechinterp(filename, numRxns):
             if blankcond is None and comcond is None:
                 #
                 #Use an if/elif block to check whether the current line
-                #contains any auxillary information. The options 'LOW',
+                #contains any auxiliary information. The options 'LOW',
                 #'HIGH', 'REV', 'PLOG', and 'CHEB' are mutually
                 #exclusive, so there should be no chance of a different
                 #type overwriting a previous type.
