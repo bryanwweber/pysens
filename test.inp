@@ -1,0 +1,28 @@
+! 
+! problem type definition
+! 
+CONV   ! Constrain Volume And Solve Energy Equation
+ENRG   ! Solve Gas Energy Equation
+TRAN   ! Transient Solver
+! 
+! physical property
+! 
+!Surface_Temperature   ! Surface Temperature Same as Gas Temperature
+IFAC 0.1   ! Ignition Noise Filtering Factor
+PRES 40.0   ! Pressure (atm)
+QLOS 0.0   ! Heat Loss (cal/sec)
+TEMP 689   ! Temperature (K) 
+DTIGN 400  ! Ignition Temperature Delta (K)
+! 
+! species property
+! 
+REAC ic5h11oh 0.0272
+REAC o2 0.2044
+REAC n2 0.7684
+! 
+! solver control
+! 
+ADAP   ! Save Additional Adaptive Points
+ASTEPS 20   ! Use Solver Integration Steps
+TIME 0.1   ! End Time (sec)
+END
