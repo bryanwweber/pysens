@@ -1,0 +1,136 @@
+# Syntax rules of CKSolnList.txt:
+# - any text after a '#' character is considered comments.
+# - the following keywords are reserved:
+#   VARIABLE, UNIT, SPECIES, VAR, SEN, ROP, FILTER, TOP, BOTTOM, MAX, MIN,
+#   ALL, NONE
+
+# The following section handles variable selections.  There are three global
+# selection options:
+#   VARIABLE VAR ALL/NONE - select all variables or none
+#   VARIABLE SEN ALL/NONE - select all sensitivities or none
+#   VARIABLE ROP ALL/NONE - select all rate-of-productions or none
+# There are also selection options on a per-variable base:
+#   VARIABLE var_name var_flag sen_flag rop_flag
+# The flag can have three types of value:
+#   0 - there is no data, so can not be selected
+#   1 - is selected already, can be de-selected
+#   3 - is de-selected already, can be selected
+# These two types of selection options can be used together to make the
+# process more efficient.  For example, if the user only wants temperature
+# and its sensitivity and NO2 and its rate-of-production but nothing else:
+   VARIABLE VAR NONE
+   VARIABLE SEN NONE
+   VARIABLE ROP NONE
+#   VARIABLE temperature 1 1 0
+#   VARIABLE NO2 1 0 1
+
+VARIABLE  all_single_point_values  1  0  0
+
+# The following section handles unit selections.  Each unit choice can be
+# set using
+#   UNIT var_type unit_choice
+# The available variable types and their unit choices include (with the
+# first unit choice being the default):
+#   Time (sec) (min) (hr) (msec) (microsec)
+#   Distance (cm) (m) (inch) (ft) (mm) (mil) (micron) (nm)
+#   Temperature (K) (C) (F)
+#   Plasma_Energies (eV) (K) (erg) (J) (kJ) (cal) (kcal) (BTU) (lbf-ft)
+#   Pressure (dyne/cm2) (atm) (Pa) (bar) (torr) (mtorr) (PSI)
+#   Area (cm2) (m2) (inch2) (ft2)
+#   Volume (cm3) (m3) (inch3) (ft3)
+#   Mass (g) (kg) (lbm) (mg)
+#   Specific_Volume (cm3/g) (m3/kg) (m3/g) (ft3/lbm)
+#   Density (g/cm3) (kg/m3) (kg/cm3) (lbm/ft3)
+#   Velocity (cm/sec) (m/sec) (ft/sec)
+#   Mass_Flow_Rate (g/sec) (kg/sec) (lbm/sec) (lbm/hr) (mole/sec)
+#     (sccm@298.15K) (sccm@273.15K)
+#   Volumetric_Flow_Rate (cm3/sec) (m3/sec) (ft3/sec) (gallon/min)
+#   Mass_Flux (g/cm2-sec) (kg/m2-sec) (kg/cm2-sec) (lbm/ft2-sec)
+#     (lbf-sec/ft3) (mole/cm2-sec)
+#   Heat (erg) (J) (kJ) (cal) (kcal) (BTU) (lbf-ft)
+#   Energy (erg/g) (J/kg) (J/g) (kJ/g) (cal/kg) (cal/g) (kcal/g) (BTU/lbm)
+#     (lbf-ft/lbm)
+#   Entropy (erg/g-K) (J/kg-K) (J/g-K) (kJ/g-K) (cal/kg-K) (cal/g-K)
+#     (kcal/g-K) (BTU/lbm-F) (lbf-ft/lbm-F)
+#   Heat_Flux (erg/sec) (J/sec) (kJ/sec) (cal/sec) (kcal/sec) (BTU/sec)
+#     (BTU/hr) (lbf-ft/sec)
+#   Heat_Flux_Distance (erg/cm-sec) (J/m-sec) (J/cm-sec) (kJ/cm-sec)
+#     (cal/m-sec) (cal/cm-sec) (kcal/cm-sec) (BTU/ft-sec) (BTU/ft-hr)
+#     (lbf/sec)
+#   Heat_Flux_Area (erg/cm2-sec) (J/m2-sec) (J/cm2-sec) (kJ/cm2-sec)
+#     (cal/m2-sec) (cal/cm2-sec) (kcal/cm2-sec) (BTU/ft2-sec) (BTU/ft2-hr)
+#     (lbf/ft-sec)
+#   Heat_Production_Rate (erg/cm3-sec) (J/m3-sec) (J/cm3-sec) (kJ/cm3-sec)
+#     (cal/m3-sec) (cal/cm3-sec) (kcal/cm3-sec) (BTU/ft3-sec) (BTU/ft3-hr)
+#     (lbf/ft2-sec)
+#   Power (erg/sec) (watts) (kW) (cal/sec) (kcal/sec) (eV/sec) (horsepower)
+#     (lbf-ft/sec) (BTU/hr)
+#   Site_Density (mole/cm2) (mole/m2) (mole/ft2)
+#   Linear_Deposition_Rate (cm/sec) (m/sec) (ft/sec) (micron/min) (angs/sec)
+#     (angs/min) (angs/hr)
+#   Composition (mole_fraction) (mass_fraction) (concentration)
+#     (partial_pressure) (dry_mole_fraction) (dry_mass_fraction)
+#     (number_density) (ppm)
+#   Concentration (mole/cm3) (mole/m3) (mole/inch3) (mole/ft3)
+#   Number_Density (molecules/cm3) (molecules/m3) (molecules/inch3)
+#     (molecules/ft3)
+#   Sensitivity (local_normalization) (maximum_normalization)
+#   Rate_of_Production (mole/cm3-sec) (mole/m3-sec) (mole/ft3-sec)
+#     (g/cm3-sec) (1/sec)
+#   Surface_Rate_of_Production (mole/cm2-sec) (mole/m2-sec) (mole/ft2-sec)
+#     (g/cm2-sec)
+#   Bulk_Rate_of_Production (mole/cm2-sec) (mole/m2-sec) (mole/ft2-sec)
+#     (g/cm2-sec) (cm/sec) (micron/min) (angs/sec) (angs/min) (angs/hr)
+
+UNIT  Time  (sec)
+UNIT  Distance  (cm)
+UNIT  Temperature  (K)
+UNIT  PlasmaEnergies  (eV)
+UNIT  Pressure  (dyne/cm2)
+UNIT  Area  (cm2)
+UNIT  Volume  (cm3)
+UNIT  Mass  (g)
+UNIT  SpecificVolume  (cm3/g)
+UNIT  Density  (g/cm3)
+UNIT  Velocity  (cm/sec)
+UNIT  MassFlowRate  (g/sec)
+UNIT  VolumetricFlowRate  (cm3/sec)
+UNIT  MassFlux  (g/cm2-sec)
+UNIT  Heat  (erg)
+UNIT  Energy  (erg/g)
+UNIT  Entropy  (erg/g-K)
+UNIT  HeatFlux  (erg/sec)
+UNIT  HeatFluxDistance  (erg/cm-sec)
+UNIT  HeatFluxArea  (erg/cm2-sec)
+UNIT  HeatProductionRate  (erg/cm3-sec)
+UNIT  Power  (erg/sec)
+UNIT  SiteDensity  (mole/cm2)
+UNIT  LinearDepositionRate  (cm/sec)
+UNIT  Composition  (mole_fraction)
+UNIT  Concentration  (mole/cm3)
+UNIT  NumberDensity  (molecules/cm3)
+UNIT  Sensitivity  (local_normalization)
+UNIT  RateofProduction  (mole/cm3-sec)
+UNIT  SurfaceRateofProduction  (mole/cm2-sec)
+UNIT  BulkRateofProduction  (mole/cm2-sec)
+
+# The following section handles the filter for top/bottom selection.  The
+# user can pick the top n or bottom n species, reaction sensitivities, and
+# species rate-of-productions.  Only one of the three(four) choices, ALL,
+# NONE, TOP n, BOTTOM n, can be selected.
+#   SPECIES ALL/TOP n/BOTTOM n
+#   SEN ALL/NONE/TOP n/BOTTOM n
+#   ROP ALL/NONE/TOP n/BOTTOM n
+
+SPECIES  ALL
+SEN  ALL
+ROP  ALL
+
+# The following section handles the filter for species data based on mole
+# fraction.  The MAX and MIN specifies the range of mole fraction.  The
+# default is MAX = 1.0 and MIN = 0.0.
+#   FILTER MAX max_value
+#   FILTER MIN min_value
+
+FILTER  MIN  0.0
+FILTER  MAX  1.0
