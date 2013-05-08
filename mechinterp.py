@@ -40,9 +40,9 @@ def mechinterp(lines, numRxns):
     #
     #Initialize 'reactionNum', a counter of the number of reactions, and
     #'reacLines', a zero-based list of the line numbers of the reactions
-    #in the input file. Set the 'numRxns' element of the 'reacLines' list
-    #to the number of lines in the input file so that it can be used as
-    #a search parameter later.
+    #in the input file. Set the 'numRxns' element of the 'reacLines' 
+    #list to the number of lines in the input file so that it can be 
+    #used as a search parameter later.
     #
     reactionNum = 0
     reacLines = [0]*numRxns
