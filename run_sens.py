@@ -3,7 +3,7 @@ def auxcheck(lines,matchcond,rfac):
     import re
     from decimal import Decimal
     
-    Amatch = re.compile(r'([-+]?[0-9]+(\.[0-9]+)?[eE][-+]?[0-9]+)')
+    Amatch = re.compile(r'(([-+]?[0-9]+(\.[0-9]+)?[eE][-+]?[0-9]+)|([0]+\.?[0]+))')
     for lineNum in range(len(lines)):
         line = lines[lineNum]
         skip1 = matchcond.search(line)
@@ -54,15 +54,15 @@ lines = inputfile.readlines()
 inputfile.close()
 
 numRxns = 2072
-rfactor = 2
-wantreaction = [x+1 for x in range(numRxns)]
+rfactor = 1
+wantreaction = [1]#[x+1 for x in range(1920,numRxns)]
 ignSens = [0]*len(wantreaction)
 reacLines, searchLines, extraInfo = mechinterp(lines,numRxns)
-tignsens = open('tignsens.csv','a')
+tignsens = open('tignsens.csv','a',0)
 Amatch = re.compile(r'([-+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)')
 for i in range(len(wantreaction)):
     rxnNum = wantreaction[i]-1
-    outLines = lines
+    outLines = lines[:]
     line = lines[reacLines[rxnNum]]
     Afactor = Amatch.search(line)
 ##    print(rxnNum, Afactor.group(1))
