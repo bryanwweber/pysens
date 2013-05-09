@@ -100,7 +100,8 @@ def mechinterp(lines, numRxns):
         #of 'reacLines' and the line number in the (i+1)th element. Add
         #1 to the first line number to avoid the reaction line itself.
         #The 'range' function automatically excludes the last number in
-        #the range.
+        #the range, which would be the next reaction, so there is no
+        #need to subtract one from the second line number.
         #
         searchLines[i] = list(range(reacLines[i]+1,reacLines[i+1]))
         #
@@ -120,7 +121,8 @@ def mechinterp(lines, numRxns):
                 #contains any auxiliary information. The options 'LOW',
                 #'HIGH', 'REV', 'PLOG', and 'CHEB' are mutually
                 #exclusive, so there should be no chance of a different
-                #type overwriting a previous type.
+                #type being present. Therefore, break out of the loop
+                #through 'searchLines[i]' when a keyword is found.
                 #
                 lowcond = lowmatch.search(line)
                 highcond = highmatch.search(line)
@@ -128,15 +130,20 @@ def mechinterp(lines, numRxns):
                 plogcond = plogmatch.search(line)
                 chebcond = chebmatch.search(line)
                 if lowcond is not None:
-                    extraInfo[i:i+1] = [1]
+                    extraInfo[i] = 1
+                    break
                 elif highcond is not None:
-                    extraInfo[i:i+1] = [2]
+                    extraInfo[i] = 2
+                    break
                 elif revcond is not None:
-                    extraInfo[i:i+1] = [3]
+                    extraInfo[i] = 3
+                    break
                 elif plogcond is not None:
-                    extraInfo[i:i+1] = [4]
+                    extraInfo[i] = 4
+                    break
                 elif chebcond is not None:
-                    extraInfo[i:i+1] = [5]
+                    extraInfo[i] = 5
+                    break
                 #
                 #End if/elif
                 #
