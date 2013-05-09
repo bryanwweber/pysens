@@ -14,6 +14,9 @@ def mechinterp(lines, numRxns):
                 3 - REV reaction specified
                 4 - PLOG reaction specified
                 5 - CHEB reaction specified
+    thermInChem - boolean indicating the status of the thermodynamic data.
+                  False - thermo data is stored in a separate file
+                  True - thermo data is stored in the chemistry file
     
     """
 #
@@ -37,6 +40,7 @@ def mechinterp(lines, numRxns):
     revmatch = re.compile(r'(?i)^[\s]*REV')
     plogmatch = re.compile(r'(?i)^[\s]*PLOG')
     chebmatch = re.compile(r'(?i)^[\s]*CHEB')
+    thermmatch = re.compile(r'(?i)THERM ALL|THERMO ALL')
     #
     #Initialize 'reactionNum', a counter of the number of reactions, and
     #'reacLines', a zero-based list of the line numbers of the reactions
@@ -69,8 +73,8 @@ def mechinterp(lines, numRxns):
         #If the reaction condition contains information the line is a 
         #reaction. Put the line number of this reaction in the 
         #'reacLines' list, and increment the reaction counter. Remember 
-        #that since Python is zero-based, the reaction number of a
-        # reaction will be one more than the number from this loop
+        #that since Python is zero-based, the real reaction number of a
+        #reaction will be one more than the number from this loop
         #
         if rxncond is not None:
             reacLines[reactionNum] = lineNum
@@ -156,7 +160,19 @@ def mechinterp(lines, numRxns):
     #
     #End Loop
     #
-    return (reacLines, searchLines, extraInfo)
+    #
+    #Check if the thermo data is included in the chemistry.
+    #
+    for line in lines:
+        if thermmatch.search(line) is not None:
+            thermInChem = True
+            break
+        else:
+            thermInChem = False
+    #
+    #Return the output information
+    #
+    return (reacLines, searchLines, extraInfo, thermInChem)
 #
 #End function
 #
