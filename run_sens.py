@@ -1,4 +1,72 @@
 ###############################################################################
+def chebcheck(lines,rfac):
+    """Take Chebychev auxiliary lines and return lines with modified a_(1,1)
+
+    INPUT:
+    lines - list of auxiliary information lines to check
+    rfac - rate coefficient  multiplication factor
+    OUTPUT:
+    lines - list of modified auxiliary information lines
+
+    """
+#
+#Begin function
+#
+    #
+    #Compile the regular expression to match the Chebychev `a` 
+    #coefficients and CHEB keyword.
+    #
+    Amatch = re.compile(r'(([-+]?[0-9]+(\.[0-9]+)?[eE][-+]?[0-9]+)|([0-9]+(\.[0-9]+)?))')
+    chebmatch = re.compile(r'(?i)^[\s]*CHEB')
+    #
+    #Set a logical for whether or not we've found the first line with a
+    #CHEB keyword (not TCHEB or PCHEB).
+    #
+    firstChebLine = True
+    #
+    #Convert the input rfactor to log10 of the rfactor. We have to go
+    #through the string to arbitrary precision conversion so that we
+    #can use arbitrary precision throughout. The conversion to string
+    #is not necessary in Python 2.7+ and can be removed in that case.
+    #
+    rfac = Decimal(str(rfac))
+    addfac = Decimal.log10(rfac)
+    #
+    #Loop through the input lines
+    #
+    for lineNum in range(len(lines)):
+        line = lines[lineNum]
+        chebcond = chebmatch.search(line)
+        #
+        #If this is a 'CHEB' line and its the first time we've
+        #encountered a 'CHEB' line, set `firstChebLine` to `False`
+        #
+        if chebcond is not None and firstChebLine:
+            firstChebLine = False
+        #
+        #If this is a 'CHEB' line and it is not the first time we've
+        #encountered a 'CHEB' line, match the a_(1,1) coefficient, and
+        #add log10(rfactor) to it.
+        #
+        elif chebcond is not None and not firstChebLine:
+            acoeff = Amatch.search(line)
+            x = Decimal(acoeff.group(1))
+            x = x + addfac
+            #
+            #Format the new a_(1,1) into scientific notation. Replace
+            #the correct line in `lines`. Break out of the loop to avoid
+            #changing any more coefficients.
+            #
+            modline = line[:acoeff.start()] + '{0:13.6E}'.format(x)\
+                      + line[acoeff.end():]
+            lines[lineNum] = modline
+            break
+    #
+    #Return the list of modified lines
+    #
+    return lines
+###############################################################################
+###############################################################################
 def auxcheck(lines,matchcond,rfac):
     """Take auxiliary lines and return lines with modified Arrhenius coefficients.
 
@@ -14,12 +82,6 @@ def auxcheck(lines,matchcond,rfac):
 #
 #Begin function
 #
-    #
-    #Import the module for regular expressions and for converting
-    #strings to arbitrary precision numbers
-    #
-    import re
-    from decimal import Decimal
     #
     #Compile the regular expression to match the Arrhenius coefficients
     #
@@ -81,22 +143,25 @@ class cd:
 #Import the necessary modules, including mechinterp from mechinterp.py
 #
 import re, os, subprocess, shutil
-from decimal import Decimal
+from decimal import *
 from mechinterp import mechinterp
 
 ###############################################################################
 #These are the user input variables. The user should change each of them to   #
 #match their mechanism. `inputfilename` is the original chemistry file.       #
-#`numRxns` is the number of reactions in the mechanism. `rfactor` is the      #
-#multiplication factor for each reaction. `wantreaction` is a list of the     #
+#`thermfile` is the file containing the thermo data, if necessary. If the     #
+#thermo data is included in the chemistry input file, this variable will not  #
+#be used. `numRxns` is the number of reactions in the mechanism. `rfactor` is #
+#the multiplication factor for each reaction. `wantreaction` is a list of the #
 #reaction numbers the user wishes to be analyzed. `sensfilename` is the       #
 #filename in which the comma-seperated output should be stored. `siminputfile`#
 #is the file name of the file storing input information for the simulation.   #
 #                                                                             #
 inputfilename = 'chem.inp'                                                    #
+thermfile = 'therm.dat'                                                       #
 numRxns = 2072                                                                #
-rfactor = 1                                                                   #
-wantreaction = [1]#[x+1 for x in range(1920,numRxns)]                         #
+rfactor = 2                                                                   #
+wantreaction = [1823]#[x+1 for x in range(1920,numRxns)]                      #
 sensfilename = 'tignsens.csv'                                                 #
 siminputfile = 'test.inp'                                                     #
 #                                                                             #
@@ -119,7 +184,7 @@ dupmatch = re.compile(r'(?i)\bDUP\b|\bDUPLICATE\b')
 endmatch = re.compile(r'(?i)^END')
 revmatch = re.compile(r'(?i)^[\s]*REV')
 plogmatch = re.compile(r'(?i)^[\s]*PLOG')
-chebmatch = re.compile(r'(?i)^[\s]*CHEB')
+
 Amatch = re.compile(r'([-+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)')
 #
 #Set the directory of the current version of CHEMKIN-Pro
@@ -149,7 +214,7 @@ tignsens = open('tignsens.csv','a',0)
 #information. These are stored, respectively, in `reacLines`,
 #`searchLines`, and `extraInfo`.
 #
-reacLines, searchLines, extraInfo = mechinterp(lines,numRxns)
+reacLines, searchLines, extraInfo, thermInChem = mechinterp(lines,numRxns)
 #
 #Set filenames of simulation input and output files.
 #
@@ -157,7 +222,6 @@ inpfile = r'test.inp'
 outfile = r'test.out'
 chemoutput = r'chem.out'
 chemasc = r'chem.asc'
-thermfile = r'therm.dat'
 #
 #Loop through the reaction numbers in `wantreaction`. `i` is our loop
 #variable.
@@ -228,7 +292,7 @@ for i in range(len(wantreaction)):
             #CHEB reactions aren't implemented yet, so send a match
             #condition that won't match any lines.
             #
-            ret = auxcheck(sendLines,lowmatch,rfactor)
+            ret = chebcheck(sendLines,rfactor)
         #
         #Loop through the returned lines and set the correct line in the
         #`outLines` list to the modified lines.
@@ -253,7 +317,11 @@ for i in range(len(wantreaction)):
     shutil.copyfile('CKSolnList.txt', chemfolder + '/CKSolnList.txt')
     shutil.copyfile(reactiondir + 'data/chemkindata.dtd',
                     chemfolder + '/chemkindata.dtd')
-    shutil.copyfile(thermfile, chemfolder + '/' + thermfile)
+    #
+    #If the thermo data is in the chemistry file, we don't have to copy
+    #therm.dat
+    if not thermInChem:
+        shutil.copyfile(thermfile, chemfolder + '/' + thermfile)
     #
     #Change directory into the simulation directory.
     #
@@ -272,10 +340,17 @@ for i in range(len(wantreaction)):
         #
         #Call the CHEMKIN-Pro interpreter, then the solver, then the
         #post-processor, then the transpose utility to create the
-        #solution .csv files.
+        #solution .csv files. First check if we need the thermo file.
         #
-        subprocess.call([ckinterp, '-i', chemfilename, '-o', chemoutput,
-                         '-d', thermfile, '-c', chemasc])
+        if thermInChem:
+            subprocess.call([ckinterp, '-i', chemfilename, '-o', chemoutput,
+                             '-c', chemasc])
+        else:
+            subprocess.call([ckinterp, '-i', chemfilename, '-o', chemoutput,
+                             '-d', thermfile, '-c', chemasc])
+        #
+        #End if
+        #
         subprocess.call([reactor, '-i',inpfile, '-o', outfile,
                          'Pro', '-c', chemasc])
         subprocess.call(['GetSolution', 'CKSolnList.txt', 'XMLdata.zip'])
@@ -295,7 +370,7 @@ for i in range(len(wantreaction)):
         #the final output. Convert the ignition delay to an arbitrary
         #precision number.
         #
-        ignDelay = Decimal([x.strip() for x in ignLines[1].split(',')][-1])
+        ignDelay = float([x.strip() for x in ignLines[1].split(',')][-1])
         #
         #Create a list for writing to the output file, including the
         #corrected (i.e. one-based) reaction number, the multiplication
@@ -316,7 +391,8 @@ for i in range(len(wantreaction)):
     #
     #Print to the screen some progress information.
     #
-    print(i+1, 'of', len(wantreaction), rxnNum + 1, ignDelay)
+    print('Case {0} of {1} \nReaction #: {2} \nIgnition Delay: {3}'\
+        .format(i+1,len(wantreaction),rxnNum+1,ignDelay))
     #
     #Done with the loop through `wantreaction`.
     #
