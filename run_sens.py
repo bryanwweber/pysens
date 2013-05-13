@@ -184,7 +184,7 @@ dupmatch = re.compile(r'(?i)\bDUP\b|\bDUPLICATE\b')
 endmatch = re.compile(r'(?i)^END')
 revmatch = re.compile(r'(?i)^[\s]*REV')
 plogmatch = re.compile(r'(?i)^[\s]*PLOG')
-Amatch = re.compile(r'([-+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)')
+Amatch = re.compile(r'((?<![\w\-])([-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?)(?!\w))')
 #
 #Set the directory of the current version of CHEMKIN-Pro
 #
