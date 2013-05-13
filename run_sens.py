@@ -157,11 +157,11 @@ from mechinterp import mechinterp
 #filename in which the comma-seperated output should be stored. `siminputfile`#
 #is the file name of the file storing input information for the simulation.   #
 #                                                                             #
-inputfilename = 'chem.inp'                                                    #
+inputfilename = '04-MAR-2013-MIT.inp'                                         #
 thermfile = 'therm.dat'                                                       #
-numRxns = 2072                                                                #
-rfactor = 2                                                                   #
-wantreaction = [1823]#[x+1 for x in range(1920,numRxns)]                      #
+numRxns = 10413                                                               #
+rfactor = 1                                                                   #
+wantreaction = [1]#[x+1 for x in range(1920,numRxns)]                         #
 sensfilename = 'tignsens.csv'                                                 #
 siminputfile = 'test.inp'                                                     #
 #                                                                             #
@@ -184,7 +184,6 @@ dupmatch = re.compile(r'(?i)\bDUP\b|\bDUPLICATE\b')
 endmatch = re.compile(r'(?i)^END')
 revmatch = re.compile(r'(?i)^[\s]*REV')
 plogmatch = re.compile(r'(?i)^[\s]*PLOG')
-
 Amatch = re.compile(r'([-+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?)')
 #
 #Set the directory of the current version of CHEMKIN-Pro
