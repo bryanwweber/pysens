@@ -85,7 +85,7 @@ def auxcheck(lines,matchcond,rfac):
     #
     #Compile the regular expression to match the Arrhenius coefficients
     #
-    Amatch = re.compile(r'(([-+]?[0-9]+(\.[0-9]+)?[eE][-+]?[0-9]+)|([0]+\.?[0]+))')
+    Amatch = re.compile(r'(([-+]?[0-9]+(\.[0-9]+)?[eE][-+]?[0-9]+)|(?<![\d\.])([0]+\.?[0]+)(?![\d]))')
     #
     #Loop through the lines in the input list
     #
@@ -185,6 +185,7 @@ endmatch = re.compile(r'(?i)^END')
 revmatch = re.compile(r'(?i)^[\s]*REV')
 plogmatch = re.compile(r'(?i)^[\s]*PLOG')
 Amatch = re.compile(r'((?<![\w\-])([-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?)(?!\w))')
+reacmatch = re.compile(r'((^|^[\s]+)[\s\w\d\(\)+=<>-_*]+(\s))')
 #
 #Set the directory of the current version of CHEMKIN-Pro
 #
@@ -287,10 +288,6 @@ for i in range(len(wantreaction)):
         elif extraInfo[rxnNum] == 4:
             ret = auxcheck(sendLines,plogmatch,rfactor)
         elif extraInfo[rxnNum] == 5:
-            #
-            #CHEB reactions aren't implemented yet, so send a match
-            #condition that won't match any lines.
-            #
             ret = chebcheck(sendLines,rfactor)
         #
         #Loop through the returned lines and set the correct line in the
@@ -377,7 +374,7 @@ for i in range(len(wantreaction)):
         #separated format and convert to a string. Then append a newline
         #and print the list to the sensitivity output file.
         #
-        ignSens= [rxnNum + 1, rfactor, ignDelay]
+        ignSens= [rxnNum + 1, rfactor, ignDelay,'','',reacmatch.search(line).group(1).strip()]
         printsens = ','.join(map(str, ignSens))
         tignsens.write(printsens + '\n')
         #
