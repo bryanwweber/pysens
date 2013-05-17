@@ -194,8 +194,8 @@ for i in range(len(wantreaction)):
         #
         chemfilename = 'chem' + str(rxnNum + 1) + '.inp'
         chemfile = open(chemfilename, 'w')
-        for line in outLines:
-            chemfile.write(line)
+        for outLine in outLines:
+            chemfile.write(outLine)
         chemfile.close()
         #
         #Call the CHEMKIN-Pro interpreter, then the solver, then the
