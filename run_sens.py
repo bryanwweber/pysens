@@ -21,11 +21,11 @@ from sens_helper import *
 #filename in which the comma-seperated output should be stored. `siminputfile`#
 #is the file name of the file storing input information for the simulation.   #
 #                                                                             #
-inputfilename = 'Burke-H2-2012.inp'                                           #
-thermfile = 'therm.dat'                                                       #
-numRxns = 27                                                                  #
+inputfilename = 'mch_chx_v9j_mech.inp'                                           #
+thermfile = 'mch_chx_v8b_therm.dat'                                                       #
+numRxns = 6493                                                                  #
 rfactor = 1                                                                   #
-wantreaction = [1]#[x+1 for x in range(1920,numRxns)]                         #
+wantreaction = [4]#[x+1 for x in range(1920,numRxns)]                         #
 sensfilename = 'tignsens.csv'                                                 #
 siminputfile = 'test.inp'                                                     #
 #                                                                             #
@@ -249,7 +249,7 @@ for i in range(len(wantreaction)):
     #
     #Remove the simulation directory.
     #
-    shutil.rmtree(chemfolder)
+    #shutil.rmtree(chemfolder)
     #
     #Print to the screen some progress information.
     #

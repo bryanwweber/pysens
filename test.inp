@@ -8,17 +8,17 @@ TRAN   ! Transient Solver
 ! physical property
 ! 
 !Surface_Temperature   ! Surface Temperature Same as Gas Temperature
-IFAC 0.1   ! Ignition Noise Filtering Factor
-PRES 40.0   ! Pressure (atm)
+IFAC 1E-12   ! Ignition Noise Filtering Factor
+PRES 25.5   ! Pressure (atm)
 QLOS 0.0   ! Heat Loss (cal/sec)
-TEMP 689   ! Temperature (K) 
-DTIGN 400  ! Ignition Temperature Delta (K)
+TEMP 700   ! Temperature (K) 
+TIFP  ! Ignition Temperature Delta (K)
 ! 
 ! species property
 ! 
-REAC ic5h11oh 0.0272
-REAC o2 0.2044
-REAC n2 0.7684
+REAC mch 1
+REAC o2 10.5
+reac n2 93.5
 ! 
 ! solver control
 ! 
