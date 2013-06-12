@@ -73,10 +73,12 @@ inputfile.close()
 tignsens = open('tignsens.csv','a',0)
 #
 #Call the mechanism interpreter module. The mechinterp function returns
-#a tuple of lists - the line numbers in the input file of the reactions,
-#the lines between each reaction, and whether a reaction has auxiliary
-#information. These are stored, respectively, in `reacLines`,
-#`searchLines`, and `extraInfo`.
+#a tuple of lists plus a boolean. The lists contain the line numbers in
+#the input file of the reactions, the lines between each reaction, and
+# whether a reaction has auxiliary information. The boolean checks
+#whether the thermo data is available in the chemistry file or if it
+#should be taken from a separate file. These are stored, respectively,
+# in `reacLines`, `searchLines`, `extraInfo` and `thermInChem`.
 #
 reacLines, searchLines, extraInfo, thermInChem = mechinterp(lines,numRxns)
 #
@@ -238,7 +240,7 @@ for i in range(len(wantreaction)):
         #separated format and convert to a string. Then append a newline
         #and print the list to the sensitivity output file.
         #
-        ignSens= [rxnNum + 1, rfactor, ignDelay,'','',reacmatch.search(line).group(1).strip()]
+        ignSens = [rxnNum + 1, rfactor, ignDelay,'','',reacmatch.search(line).group(1).strip()]
         printsens = ','.join(map(str, ignSens))
         tignsens.write(printsens + '\n')
         #
