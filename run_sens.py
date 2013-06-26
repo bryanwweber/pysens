@@ -3,7 +3,8 @@
 #Begin driver script for running the sensitivity analysis
 #
 #
-#Import the necessary modules, including mechinterp from mechinterp.py
+#Import the necessary modules, including mechinterp from mechinterp.py and all
+#of the modules from sens_helper.
 #
 import re, os, subprocess, shutil
 from decimal import *
