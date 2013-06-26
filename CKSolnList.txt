@@ -24,6 +24,7 @@
 #   VARIABLE temperature 1 1 0
 #   VARIABLE NO2 1 0 1
 
+VARIABLE temperature 1 0 0
 VARIABLE  all_single_point_values  1  0  0
 
 # The following section handles unit selections.  Each unit choice can be

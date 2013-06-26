@@ -22,9 +22,9 @@ from sens_helper import *
 #filename in which the comma-seperated output should be stored. `siminputfile`#
 #is the file name of the file storing input information for the simulation.   #
 #                                                                             #
-inputfilename = 'mch_chx_v9j_mech.inp'                                           #
-thermfile = 'mch_chx_v8b_therm.dat'                                                       #
-numRxns = 6493                                                                  #
+inputfilename = 'Burke-H2-2012.inp'                                           #
+thermfile = 'mch_chx_v8b_therm.dat'                                           #
+numRxns = 28                                                                  #
 rfactor = 1                                                                   #
 wantreaction = [4]#[x+1 for x in range(1920,numRxns)]                         #
 sensfilename = 'tignsens.csv'                                                 #
