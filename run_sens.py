@@ -25,9 +25,9 @@ from sens_helper import *
 #                                                                             
 inputfilename = 'Burke-H2-2012.inp'
 thermfile = ''
-numRxns = 28
+numRxns = 27
 rfactors = ['1']
-wantreactions = [4]#[x+1 for x in range(1920,numRxns)]
+wantreactions = [x+1 for x in range(numRxns)]
 sensfilename = 'tignsens.csv'
 siminputfiles = ['test.inp']
 #                                                                             
@@ -249,12 +249,12 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
             #
             #Remove the simulation directory.
             #
-            #shutil.rmtree(chemfolder)
+            shutil.rmtree(chemfolder)
             #
             #Print to the screen some progress information.
             #
             caseNo = i+1 + j*len(wantreactions)
-            print('Case {0} of {1} \nReaction #: {2} \nIgnition Delay: {3}\nTemperature: {4}\nFactor: {5}'
+            print('Case {0} of {1} \nReaction #: {2} \nIgnition Delay: {3}\nInput File: {4}\nFactor: {5}'
                   .format(caseNo,totalCase,rxnNum+1,ignDelay,inpfile,rfactor))
             #
             #Done with the loop through `wantreactions`.
