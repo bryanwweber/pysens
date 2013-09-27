@@ -16,9 +16,9 @@ TIFP  ! Ignition Temperature Delta (K)
 ! 
 ! species property
 ! 
-REAC H2 1
-REAC O2 10.5
-reac N2 93.5
+REAC h2 1
+REAC o2 10.5
+reac n2 93.5
 ! 
 ! solver control
 ! 

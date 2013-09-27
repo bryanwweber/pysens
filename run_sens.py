@@ -23,11 +23,11 @@ from sens_helper import *
 #filename in which the comma-seperated output should be stored. `siminputfile`
 #is the file name of the file storing input information for the simulation.   
 #                                                                             
-inputfilename = 'Burke-H2-2012.inp'
+inputfilename = 'chem2.inp'
 thermfile = ''
-numRxns = 27
+numRxns = 3854
 rfactors = ['1']
-wantreactions = [x+1 for x in range(numRxns)]
+wantreactions = [3]
 sensfilename = 'tignsens.csv'
 siminputfiles = ['test.inp']
 #                                                                             
@@ -51,7 +51,7 @@ endmatch = re.compile(r'(?i)^END')
 revmatch = re.compile(r'(?i)^[\s]*REV')
 plogmatch = re.compile(r'(?i)^[\s]*PLOG')
 Amatch = re.compile(r'((?<![\w\-])([-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?)(?!\w))')
-reacmatch = re.compile(r'((^|^[\s]+)[\s\w\d\(\)+=<>-_*]+(\s))')
+reacmatch = re.compile(r'((^|^[\s]+)[\s\w\d\(\)+=<>\-_*.]+(\s))')
 #
 #Set the directory of the current version of CHEMKIN-Pro
 #
