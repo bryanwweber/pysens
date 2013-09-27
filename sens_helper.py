@@ -48,7 +48,7 @@ def chebcheck(lines,rfac):
     #can use arbitrary precision throughout. The conversion to string
     #is not necessary in Python 2.7+ and can be removed in that case.
     #
-    rfac = Decimal(str(rfac))
+    rfac = Decimal(rfac)
     addfac = Decimal.log10(rfac)
     #
     #Loop through the input lines
@@ -123,7 +123,7 @@ def auxcheck(lines,matchcond,rfac):
             #list.
             Afactor = Amatch.search(line)
             x = Decimal(Afactor.group(1))
-            x = rfac * x
+            x = Decimal(rfac) * x
             modline = line[:Afactor.start()] + str(x) + line[Afactor.end():]
             lines[lineNum] = modline
     #
