@@ -53,7 +53,7 @@ endmatch = re.compile(r'(?i)^END')
 revmatch = re.compile(r'(?i)^[\s]*REV')
 plogmatch = re.compile(r'(?i)^[\s]*PLOG')
 Amatch = re.compile(r'((?<![\w\-])([-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?)(?!\w))')
-reacmatch = re.compile(r'((^|^[\s]+)[\s\w\d\(\)+=<>\-_*.]+(\s))')
+reacmatch = re.compile(r'((^|^[\s]+)[\s\w\d()+=<>\-*.]+?(?=\s\d))')
 #
 #Set the directory of the current version of CHEMKIN-Pro
 #
