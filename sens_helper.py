@@ -123,7 +123,7 @@ def auxcheck(lines,matchcond,rfac):
             #list.
             Afactor = Amatch.search(line)
             x = Decimal(Afactor.group(1))
-            x = rfac * x
+            x = Decimal(rfac) * x
             modline = line[:Afactor.start()] + str(x) + line[Afactor.end():]
             lines[lineNum] = modline
     #
