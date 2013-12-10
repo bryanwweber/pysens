@@ -32,7 +32,6 @@ numRxns = 27
 rfactors = ['1']
 wantreactions = [1]#[x+1 for x in range(numRxns)] 
 sensfilenamebase = 'tignsens'
->>>>>>> 028aece55c1e45134f4cdbdc3d47d6688e847850
 siminputfiles = ['test.inp']
 #                                                                             
 ###############################################################################
