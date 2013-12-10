@@ -1,3 +1,4 @@
+#! /usr/bin/python3
 ###############################################################################
 #
 #Begin driver script for running the sensitivity analysis
@@ -28,7 +29,7 @@ from sens_helper import *
 #                                                                             
 inputfilename = 'chem2.inp'
 thermfile = ''
-numRxns = 27
+#numRxns = 27
 rfactors = ['1']
 wantreactions = [1]#[x+1 for x in range(numRxns)] 
 sensfilenamebase = 'tignsens'
@@ -68,7 +69,7 @@ ckinterp = reactiondir + r'bin/chem'
 #Open, read, and close the input file. The lines of the input file are
 #stored in the list `lines`. 
 #
-with open(inputfilename,'r') as inputfile:
+with open(inputfilename,'rt') as inputfile:
     lines = inputfile.readlines()
 #
 #Call the mechanism interpreter module. The mechinterp function returns
@@ -89,7 +90,7 @@ chemasc = r'chem.asc'
 totalCase = len(wantreactions)*len(siminputfiles)*len(rfactors)
 for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
     csvoutput = sensfilenamebase + '_' + inpfile.strip('.inp') + '_' + rfactor + 'x.csv'
-    with open(csvoutput,'a',0) as tignsens:
+    with open(csvoutput,'ab',0) as tignsens:
         #
         #Loop through the reaction numbers in `wantreaction`. `i` is our loop
         #variable.
