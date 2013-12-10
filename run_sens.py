@@ -26,7 +26,7 @@ from sens_helper import *
 #`siminputfile` is the file name of the file storing input information for the
 #simulation.
 #                                                                             
-inputfilename = 'mech.dat'
+inputfilename = 'chem2.inp'
 thermfile = ''
 numRxns = 27
 rfactors = ['1']
@@ -79,7 +79,7 @@ with open(inputfilename,'r') as inputfile:
 #should be taken from a separate file. These are stored, respectively,
 # in `reacLines`, `searchLines`, `extraInfo` and `thermInChem`.
 #
-reacLines, searchLines, extraInfo, thermInChem = mechinterp(lines,numRxns)
+reacLines, searchLines, extraInfo, thermInChem, = mechinterp(lines)
 #
 #Set filenames of simulation and output files.
 #

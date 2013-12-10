@@ -1,4 +1,4 @@
-def mechinterp(lines, numRxns):
+def mechinterp(lines):
     """Interpret CHEMKIN chemistry input files and return lists of line numbers and reaction info.
 
     INPUT:
@@ -49,13 +49,12 @@ def mechinterp(lines, numRxns):
     #used as a search parameter later.
     #
     reactionNum = 0
-    reacLines = [0]*numRxns
-    reacLines.insert(numRxns,len(lines))
+    reacLines = []
     #
     #Begin a loop over all of the lines in the input file. The lines are
     #stored in the variable 'line' for each iteration.
     #
-    for lineNum in range(len(lines)):
+    for lineNum,line in enumerate(lines):
         #
         #We have to reverse the line to properly check for a reaction.
         #This eliminates the case where an auxiliary line may contain
@@ -64,7 +63,7 @@ def mechinterp(lines, numRxns):
         #look behind, the workaround is to reverse the string and use
         #variable length look ahead.
         #
-        line = lines[lineNum][::-1]
+        line = line[::-1]
         #
         #Check for lines that are reactions, defined by the
         #reactionmatch regular expression
@@ -77,7 +76,7 @@ def mechinterp(lines, numRxns):
         #reaction will be one more than the number from this loop
         #
         if rxncond is not None:
-            reacLines[reactionNum] = lineNum
+            reacLines.append(lineNum)
             reactionNum += 1
         #
         #End if
@@ -86,13 +85,18 @@ def mechinterp(lines, numRxns):
     #End loop
     #
     #
+    #Append the last line number to the reacLines list so that it can 
+    #be used to determine the `searchLines` - see below.
+    #
+    reacLines.append(len(lines))
+    #
     #Initialize two lists to hold information about the reactions.
     #'searchLines' is a list of lists of the line numbers between each
     #reaction. 'extraInfo' is a list of integers corresponding to each
     #type of reaction rate modification.
     #
-    searchLines = [0]*numRxns
-    extraInfo = [0]*numRxns
+    searchLines = []
+    extraInfo = []
     #
     #Begin loop to find and read all of the lines between each reaction
     #to check for auxiliary information.
@@ -107,12 +111,12 @@ def mechinterp(lines, numRxns):
         #the range, which would be the next reaction, so there is no
         #need to subtract one from the second line number.
         #
-        searchLines[i] = list(range(reacLines[i]+1,reacLines[i+1]))
+        searchLines.append(list(range(reacLines[i]+1,reacLines[i+1])))
         #
-        #Loop over the line numbers in the ith element of 'searchLines'
-        #to look for auxiliary information.
+        #Loop over the line numbers in the previously appended (i.e. last)
+        #element of 'searchLines' to look for auxiliary information.
         #
-        for lineNum in searchLines[i]:
+        for lineNum in searchLines[-1]:
             line = lines[lineNum]
             #
             #Check if the line is a comment or blank
@@ -126,7 +130,7 @@ def mechinterp(lines, numRxns):
                 #'HIGH', 'REV', 'PLOG', and 'CHEB' are mutually
                 #exclusive, so there should be no chance of a different
                 #type being present. Therefore, break out of the loop
-                #through 'searchLines[i]' when a keyword is found.
+                #through `searchLines[i]` when a keyword is found.
                 #
                 lowcond = lowmatch.search(line)
                 highcond = highmatch.search(line)
@@ -134,19 +138,19 @@ def mechinterp(lines, numRxns):
                 plogcond = plogmatch.search(line)
                 chebcond = chebmatch.search(line)
                 if lowcond is not None:
-                    extraInfo[i] = 1
+                    extraInfo.append(1)
                     break
                 elif highcond is not None:
-                    extraInfo[i] = 2
+                    extraInfo.append(2)
                     break
                 elif revcond is not None:
-                    extraInfo[i] = 3
+                    extraInfo.append(3)
                     break
                 elif plogcond is not None:
-                    extraInfo[i] = 4
+                    extraInfo.append(4)
                     break
                 elif chebcond is not None:
-                    extraInfo[i] = 5
+                    extraInfo.append(5)
                     break
                 #
                 #End if/elif
@@ -172,7 +176,7 @@ def mechinterp(lines, numRxns):
     #
     #Return the output information
     #
-    return (reacLines, searchLines, extraInfo, thermInChem)
+    return reacLines, searchLines, extraInfo, thermInChem,
 #
 #End function
 #
