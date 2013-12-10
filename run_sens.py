@@ -13,22 +13,26 @@ from mechinterp import mechinterp
 from sens_helper import *
 
 ###############################################################################
-#These are the user input variables. The user should change each of them to   
-#match their mechanism. `inputfilename` is the original chemistry file.       
-#`thermfile` is the file containing the thermo data, if necessary. If the     
-#thermo data is included in the chemistry input file, this variable will not  
-#be used. `numRxns` is the number of reactions in the mechanism. `rfactor` is 
-#the multiplication factor for each reaction. `wantreaction` is a list of the 
-#reaction numbers the user wishes to be analyzed. `sensfilename` is the       
-#filename in which the comma-seperated output should be stored. `siminputfile`
-#is the file name of the file storing input information for the simulation.   
+#
+#These are the user input variables. The user should change each of them to
+#match their mechanism. `inputfilename` is the original chemistry file.
+#`thermfile` is the file containing the thermo data, if necessary. If the
+#thermo data is included in the chemistry input file, this variable will not
+#be used. `numRxns` is the number of reactions in the mechanism. `rfactor` is
+#the multiplication factor for each reaction. `wantreaction` is a list of the
+#reaction numbers the user wishes to be analyzed. `sensfilenamebase` is the
+#base of the filename in which the comma-seperated output should be stored. The
+#rest of the filename is determined programatically based on the other inputs.
+#`siminputfile` is the file name of the file storing input information for the
+#simulation.
 #                                                                             
-inputfilename = 'chem2.inp'
+inputfilename = 'mech.dat'
 thermfile = ''
-numRxns = 3854
+numRxns = 27
 rfactors = ['1']
-wantreactions = [3]
-sensfilename = 'tignsens.csv'
+wantreactions = [1]#[x+1 for x in range(numRxns)] 
+sensfilenamebase = 'tignsens'
+>>>>>>> 028aece55c1e45134f4cdbdc3d47d6688e847850
 siminputfiles = ['test.inp']
 #                                                                             
 ###############################################################################
@@ -51,11 +55,11 @@ endmatch = re.compile(r'(?i)^END')
 revmatch = re.compile(r'(?i)^[\s]*REV')
 plogmatch = re.compile(r'(?i)^[\s]*PLOG')
 Amatch = re.compile(r'((?<![\w\-])([-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?)(?!\w))')
-reacmatch = re.compile(r'((^|^[\s]+)[\s\w\d\(\)+=<>\-_*.]+(\s))')
+reacmatch = re.compile(r'((^|^[\s]+)[\s\w\d()+=<>\- *.]+?(?=\s\d))')
 #
 #Set the directory of the current version of CHEMKIN-Pro
 #
-reactiondir = r'/home/bryan/reaction/chemkin15113_linuxx8664/'
+reactiondir = r'/home/bryan/reaction/chemkin15131_linuxx8664/'
 #
 #Set the location of the binary files.
 #
@@ -67,7 +71,6 @@ ckinterp = reactiondir + r'bin/chem'
 #
 with open(inputfilename,'r') as inputfile:
     lines = inputfile.readlines()
-##tignsens = open('tignsens.csv','a',0)
 #
 #Call the mechanism interpreter module. The mechinterp function returns
 #a tuple of lists plus a boolean. The lists contain the line numbers in
@@ -79,17 +82,17 @@ with open(inputfilename,'r') as inputfile:
 #
 reacLines, searchLines, extraInfo, thermInChem = mechinterp(lines,numRxns)
 #
-#Set filenames of simulation output files.
+#Set filenames of simulation and output files.
 #
 outfile = r'test.out'
 chemoutput = r'chem.out'
 chemasc = r'chem.asc'
 totalCase = len(wantreactions)*len(siminputfiles)*len(rfactors)
 for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
-    csvoutput = 'tignsens_' + inpfile.strip('.inp') + '_' + rfactor + 'x.csv'
+    csvoutput = sensfilenamebase + '_' + inpfile.strip('.inp') + '_' + rfactor + 'x.csv'
     with open(csvoutput,'a',0) as tignsens:
         #
-        #Loop through the reaction numbers in `wantreactions`. `i` is our loop
+        #Loop through the reaction numbers in `wantreaction`. `i` is our loop
         #variable.
         #
         for i,wantreaction in enumerate(wantreactions):
@@ -108,7 +111,7 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
             #
             outLines = lines[:]
             #
-            #Grab the line from the input file that matches the reaction were
+            #Grab the line from the input file that matches the reaction we're
             #working on
             #
             line = lines[reacLines[rxnNum]]
@@ -223,12 +226,8 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
                                   'r') as outputFile:
                     ignLines = outputFile.readlines()
                 #
-                #We are interested in the last column on the second line of the
-                #output file. This contains the ignition delay if the simulation
-                #ignited. If not, it will have a 1000/T, which should be
-                #different from a typical ignition delay so we can find it in
-                #the final output. Convert the ignition delay to an arbitrary
-                #precision number.
+                #Find the columns with 'Ignition' in the title - these are the ignition delays.
+                #Then, convert the ignition delay to a float.
                 #
                 ignCol = [x for x,val in enumerate(ignLines[0].split(',')) if 'Ignition' in val]
                 ignDelay = [float(k) for k in [ignLines[1].split(',')[x].strip() for x in ignCol]]
@@ -259,7 +258,12 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
             #
             #Done with the loop through `wantreactions`.
             #
-
+        #
+        #Done with this sensitivity file
+        #
+    #
+    #Done with loop through all cases
+    #
 #
 #END
 #
