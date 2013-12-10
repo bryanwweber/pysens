@@ -102,7 +102,8 @@ def auxcheck(lines,matchcond,rfac):
 #Begin function
 #
     #
-    #Compile the regular expression to match the Arrhenius coefficients
+    #Compile the regular expression to match the Arrhenius coefficients. This
+    #is supposed to be different from the Amatch in run_sens.py
     #
     Amatch = re.compile(r'(([-+]?[0-9]+(\.[0-9]+)?[eE][-+]?[0-9]+)|(?<![\d\.])([0]+\.?[0]+)(?![\d]))')
     #
