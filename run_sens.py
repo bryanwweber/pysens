@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/python3 -u
 ###############################################################################
 #
 #Begin driver script for running the sensitivity analysis
@@ -31,7 +31,7 @@ inputfilename = 'chem2.inp'
 thermfile = ''
 #numRxns = 27
 rfactors = ['1']
-wantreactions = [1]#[x+1 for x in range(numRxns)] 
+wantreactions = [3]#[x+1 for x in range(numRxns)] 
 sensfilenamebase = 'tignsens'
 siminputfiles = ['test.inp']
 #                                                                             
@@ -90,7 +90,7 @@ chemasc = r'chem.asc'
 totalCase = len(wantreactions)*len(siminputfiles)*len(rfactors)
 for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
     csvoutput = sensfilenamebase + '_' + inpfile.strip('.inp') + '_' + rfactor + 'x.csv'
-    with open(csvoutput,'ab',0) as tignsens:
+    with open(csvoutput,'at') as tignsens:
         #
         #Loop through the reaction numbers in `wantreaction`. `i` is our loop
         #variable.
@@ -198,7 +198,7 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
                 #input file.
                 #
                 chemfilename = 'chem' + str(rxnNum + 1) + '.inp'
-                with open(chemfilename, 'w') as chemfile:
+                with open(chemfilename, 'wt') as chemfile:
                     for outLine in outLines:
                         chemfile.write(outLine)
                 #
@@ -242,6 +242,7 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
                 ignSens[2:2] = ignDelay
                 printsens = ','.join(map(str, ignSens))
                 tignsens.write(printsens + '\n')
+                tignsens.flush()
                 #
                 #Done in the `chemfolder` directory.
                 #
