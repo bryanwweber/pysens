@@ -1,3 +1,4 @@
+#! /usr/bin/python3 -u
 ###############################################################################
 #
 #Begin driver script for running the sensitivity analysis
@@ -6,7 +7,8 @@
 #Import the necessary modules, including mechinterp from mechinterp.py and all
 #of the modules from sens_helper.
 #
-import re, os, subprocess, shutil
+import re, os, subprocess, shutil, sys
+import configparser
 from itertools import product
 from decimal import *
 from mechinterp import mechinterp
@@ -16,9 +18,9 @@ from sens_helper import *
 #
 #These are the user input variables. The user should change each of them to
 #match their mechanism. `inputfilename` is the original chemistry file.
-#`thermfile` is the file containing the thermo data, if necessary. If the
+#`thermfilename` is the file containing the thermo data, if necessary. If the
 #thermo data is included in the chemistry input file, this variable will not
-#be used. `numRxns` is the number of reactions in the mechanism. `rfactor` is
+#be used. `numRxns` is the number of reactions in the mechanism. `multfactor` is
 #the multiplication factor for each reaction. `wantreaction` is a list of the
 #reaction numbers the user wishes to be analyzed. `sensfilenamebase` is the
 #base of the filename in which the comma-seperated output should be stored. The
@@ -26,16 +28,72 @@ from sens_helper import *
 #`siminputfile` is the file name of the file storing input information for the
 #simulation.
 #                                                                             
-inputfilename = 'mech.dat'
-thermfile = ''
-numRxns = 27
-rfactors = ['1']
-wantreactions = [1]#[x+1 for x in range(numRxns)] 
-sensfilenamebase = 'tignsens'
-siminputfiles = ['test.inp']
+#inputfilename = 'chem2.inp'
+#thermfilename = ''
+##numRxns = 27
+#multfactors = ['1']
+#wantreactions = [3]#[x+1 for x in range(numRxns)] 
+#sensfilenamebase = 'tignsens'
+#siminputfiles = ['test.inp']
 #                                                                             
 ###############################################################################
-
+#
+#Read the config file.
+#
+config = configparser.ConfigParser()
+config.read('pysens.conf')
+default = config['DEFAULT']
+#
+#Set the location of the CHEMKIN executable files.
+#
+reactiondir = default['chemkin root']
+if '$' in reactiondir:
+    reactiondir = os.path.expandvars(reactiondir)
+    if os.path.isdir(reactiondir):
+        reactor = os.path.join(reactiondir,'bin','CKReactorGenericClosed')
+        ckinterp = os.path.join(reactiondir,'bin','chem')
+        if not os.path.isfile(reactor) or not os.path.isfile(ckinterp):
+            print("Error: The reactor and CHEMKIN interpreter must exist at CHEMKIN_ROOT/bin/")
+            sys.exit(1)
+    else:
+        print("Error: The proper path to the CHEMKIN root directory must be specified")
+        sys.exit(1)
+#
+#Set the mechanism to be used.
+#
+if 'mech input file' in default and os.path.isfile(default['mech input file']):
+    inputfilename = default['mech input file']
+else:
+    print('Error: the mechanism file must be specified in the configuration file, and it must exist')
+    sys.exit(1)
+#
+#Set the simulation input file to be used.
+#
+if 'sim input files' in default:
+    siminputfiles = default['sim input files'].split(',')
+    for fname in siminputfiles:
+        if not os.path.isfile(fname):
+            print("Error: the specified input file {} does not exist".format(fname))
+            sys.exit(1)
+else:
+    print("Error: the simulation input file must be specified in the configuration file")
+    sys.exit(1)
+#
+#Set the multiplication factors to be used.
+#
+if 'factors' in default:
+    multfactors = default['factors'].split(',')
+else:
+    print("Error: at least one multiplication factor must be specified in the configuration file")
+    sys.exit(1)
+#
+#Set the base of the csv output file name.
+#
+if 'outputfile' in default:
+    sensfilenamebase = default['outputfile']
+else:
+    print("Error: the base of the csv output filename must be specified in the configuration file")
+    sys.exit(1)
 #
 #Compile the required regular expressions
 #
@@ -56,40 +114,86 @@ plogmatch = re.compile(r'(?i)^[\s]*PLOG')
 Amatch = re.compile(r'((?<![\w\-])([-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?)(?!\w))')
 reacmatch = re.compile(r'((^|^[\s]+)[\s\w\d()+=<>\- *.]+?(?=\s\d))')
 #
-#Set the directory of the current version of CHEMKIN-Pro
-#
-reactiondir = r'/home/bryan/reaction/chemkin15131_linuxx8664/'
-#
-#Set the location of the binary files.
-#
-reactor = reactiondir + r'bin/CKReactorGenericClosed'
-ckinterp = reactiondir + r'bin/chem'
-#
 #Open, read, and close the input file. The lines of the input file are
 #stored in the list `lines`. 
 #
-with open(inputfilename,'r') as inputfile:
-    lines = inputfile.readlines()
+try:
+    with open(inputfilename,'rt') as inputfile:
+        lines = inputfile.readlines()
+except UnicodeDecodeError:
+    with open(inputfilename,'rt',encoding='latin-1') as inputfile:
+        lines = inputfile.readlines()
+else:
+    print("Error: I can't decode the input file. Try saving it as UTF-8")
+    sys.exit(1)
 #
 #Call the mechanism interpreter module. The mechinterp function returns
 #a tuple of lists plus a boolean. The lists contain the line numbers in
 #the input file of the reactions, the lines between each reaction, and
-# whether a reaction has auxiliary information. The boolean checks
+#whether a reaction has auxiliary information. The boolean checks
 #whether the thermo data is available in the chemistry file or if it
 #should be taken from a separate file. These are stored, respectively,
-# in `reacLines`, `searchLines`, `extraInfo` and `thermInChem`.
+#in `reacLines`, `searchLines`, `extraInfo` and `thermInChem`.
 #
-reacLines, searchLines, extraInfo, thermInChem = mechinterp(lines,numRxns)
+reacLines, searchLines, extraInfo, thermInChem, = mechinterp(lines)
+#
+#Set the thermo file, if necessary.
+#
+if not thermInChem and 'thermo input file' in default and os.path.isfile(default['thermo input file']):
+    thermfilename = default['thermo input file']
+elif not thermInChem and (not 'thermo input file' in default or not os.path.isfile(default['thermo input file'])):
+    print("Error: the thermo file must be specified in the configuration file, and it must exist")
+    sys.exit(1)
+#
+#Set the reactions we want to work with.
+#
+numRxns = len(reacLines)-1
+if not 'reactions' in default:
+    print('Error: the reactions to study must be specified in the configuration file')
+    sys.exit(1)
+else:
+    wantrxns = default['reactions']
+    
+if wantrxns == all:
+    wantreactions = [x+1 for x in range(numRxns)]
+    print("All {} reactions are considered in these analyses".format(numRxns))
+elif ',' in wantrxns and ':' in wantrxns:
+    print("Error: use one of commas or colons to separate the wanted reactions")
+elif ',' in wantrxns:
+    wantreactions = [int(number) for number in wantrxns.split(',') if number]
+    print("The reactions considered in these analyses are {}".format(wantreactions))
+elif ':' in wantrxns:
+    if wantrxns.endswith(':') or wantrxns.endswith('end'):
+        spl = list(map(int, wantrxns.split(':')[:-1]))
+        spl.append(numRxns)
+    else:
+        spl = list(map(int, wantrxns.split(':')))
+    
+    if len(spl) == 2:
+        wantreactions = list(range(spl[0],spl[1]+1))
+    elif len(spl) == 3:
+        if spl[1] >= 1:
+            wantreactions = list(range(spl[0],spl[2]+1,spl[1]))
+        else:
+            print("Error: the interval in the reactions specification must be >= 1")
+            sys.exit(1)
+    else:
+        print("Error: Specify either start:stop or start:interval:stop for reactions")
+        sys.exit(1)
+    print("The reactions considered in these analyses are {}".format(wantreactions))
+else:
+    wantreactions = list(int(wantrxns))
+    print("The reaction considered in these analyses is {}".format(wantreactions))
 #
 #Set filenames of simulation and output files.
 #
-outfile = r'test.out'
-chemoutput = r'chem.out'
-chemasc = r'chem.asc'
-totalCase = len(wantreactions)*len(siminputfiles)*len(rfactors)
-for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
-    csvoutput = sensfilenamebase + '_' + inpfile.strip('.inp') + '_' + rfactor + 'x.csv'
-    with open(csvoutput,'a',0) as tignsens:
+simoutputfile = 'test.out'
+chemoutput = 'chem.out'
+chemasc = 'chem.asc'
+totalCases = len(wantreactions)*len(siminputfiles)*len(multfactors)
+for j,(inpfile,multfactor) in enumerate(product(siminputfiles,multfactors)):
+    csvoutput = sensfilenamebase + '_' + inpfile.strip('.inp') + '_' + multfactor + 'x.csv'
+    with open(csvoutput,'at') as tignsens:
         #
         #Loop through the reaction numbers in `wantreaction`. `i` is our loop
         #variable.
@@ -120,13 +224,13 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
             Afactor = Amatch.search(line)
             #
             #Set `x` to the arbitrary precision conversion of the first matching
-            #string from the Afactor match. Multiply `x` by `rfactor`.
+            #string from the Afactor match. Multiply `x` by `multfactor`.
             #Reassemble the modified reaction line with the new Arrhenius
             #coefficient, and set the correct line in `outLines` to the modified
             #line.
             #
             x = Decimal(Afactor.group(1))
-            x = Decimal(rfactor)*x
+            x = Decimal(multfactor)*x
             modline = line[:Afactor.start()] + str(x) + line[Afactor.end():]
             outLines[reacLines[rxnNum]] = modline
             #
@@ -148,15 +252,15 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
                 #auxcheck. `ret` is the returned list of modified lines.
                 #
                 if extraInfo[rxnNum] == 1:
-                    ret = auxcheck(sendLines,lowmatch,rfactor)
+                    ret = auxcheck(sendLines,lowmatch,multfactor)
                 elif extraInfo[rxnNum] == 2:
-                    ret = auxcheck(sendLines,highmatch,rfactor)
+                    ret = auxcheck(sendLines,highmatch,multfactor)
                 elif extraInfo[rxnNum] == 3:
-                    ret = auxcheck(sendLines,revmatch,rfactor)
+                    ret = auxcheck(sendLines,revmatch,multfactor)
                 elif extraInfo[rxnNum] == 4:
-                    ret = auxcheck(sendLines,plogmatch,rfactor)
+                    ret = auxcheck(sendLines,plogmatch,multfactor)
                 elif extraInfo[rxnNum] == 5:
-                    ret = chebcheck(sendLines,rfactor)
+                    ret = chebcheck(sendLines,multfactor)
                 #
                 #Loop through the returned lines and set the correct line in the
                 #`outLines` list to the modified lines.
@@ -177,15 +281,15 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
             #Copy the various files we will need to run the simulation into the
             #simulation directory.
             #
-            shutil.copyfile(inpfile, chemfolder + '/' + inpfile)
-            shutil.copyfile('CKSolnList.txt', chemfolder + '/CKSolnList.txt')
-            shutil.copyfile(reactiondir + 'data/chemkindata.dtd',
-                            chemfolder + '/chemkindata.dtd')
+            shutil.copyfile(inpfile, os.path.join(chemfolder, inpfile))
+            shutil.copyfile('CKSolnList.txt', os.path.join(chemfolder, 'CKSolnList.txt'))
+            shutil.copyfile(os.path.join(reactiondir, 'data', 'chemkindata.dtd'),
+                            os.path.join(chemfolder, 'chemkindata.dtd'))
             #
             #If the thermo data is in the chemistry file, we don't have to copy
             #therm.dat
             if not thermInChem:
-                shutil.copyfile(thermfile, chemfolder + '/' + thermfile)
+                shutil.copyfile(thermfilename, os.path.join(chemfolder, thermfilename))
             #
             #Change directory into the simulation directory.
             #
@@ -197,7 +301,7 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
                 #input file.
                 #
                 chemfilename = 'chem' + str(rxnNum + 1) + '.inp'
-                with open(chemfilename, 'w') as chemfile:
+                with open(chemfilename, 'wt') as chemfile:
                     for outLine in outLines:
                         chemfile.write(outLine)
                 #
@@ -210,11 +314,11 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
                                      '-c', chemasc])
                 else:
                     subprocess.call([ckinterp, '-i', chemfilename, '-o', chemoutput,
-                                     '-d', thermfile, '-c', chemasc])
+                                     '-d', thermfilename, '-c', chemasc])
                 #
                 #End if
                 #
-                subprocess.call([reactor, '-i',inpfile, '-o', outfile,
+                subprocess.call([reactor, '-i',inpfile, '-o', simoutputfile,
                                  'Pro', '-c', chemasc])
                 subprocess.call(['GetSolution', 'CKSolnList.txt', 'XMLdata.zip'])
                 subprocess.call(['CKSolnTranspose'])
@@ -237,10 +341,11 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
                 #separated format and convert to a string. Then append a newline
                 #and print the list to the sensitivity output file.
                 #
-                ignSens = [rxnNum + 1, rfactor,'','',reacmatch.search(line).group(1).strip()]
+                ignSens = [rxnNum + 1, multfactor,'','',reacmatch.search(line).group(1).strip()]
                 ignSens[2:2] = ignDelay
                 printsens = ','.join(map(str, ignSens))
                 tignsens.write(printsens + '\n')
+                tignsens.flush()
                 #
                 #Done in the `chemfolder` directory.
                 #
@@ -253,7 +358,7 @@ for j,(inpfile,rfactor) in enumerate(product(siminputfiles,rfactors)):
             #
             caseNo = i+1 + j*len(wantreactions)
             print('Case {0} of {1} \nReaction #: {2} \nIgnition Delay: {3}\nInput File: {4}\nFactor: {5}'
-                  .format(caseNo,totalCase,rxnNum+1,ignDelay,inpfile,rfactor))
+                  .format(caseNo,totalCases,rxnNum+1,ignDelay,inpfile,multfactor))
             #
             #Done with the loop through `wantreactions`.
             #
