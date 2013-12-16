@@ -1,5 +1,23 @@
 import re,os
 from decimal import *
+import configparser
+from io import StringIO
+
+class NoSectionConfigParser(configparser.ConfigParser):
+    def read(self,filename):
+        try:
+            text = open(filename).read()
+        except IOError:
+            pass
+        else:
+            if not text.startswith('[DEFAULT]'):
+                file = StringIO("[DEFAULT]\n" + text)
+            else:
+                file = StringIO(text)
+                
+            self.readfp(file,filename)
+
+
 def specRxnNum(rxnLines,lines,numRxns):
 ##    print(lines)
     specNum = []
