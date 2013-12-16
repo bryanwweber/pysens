@@ -8,7 +8,6 @@
 #of the modules from sens_helper.
 #
 import re, os, subprocess, shutil, sys
-import configparser
 from itertools import product
 from decimal import *
 from mechinterp import mechinterp
@@ -40,7 +39,7 @@ from sens_helper import *
 #
 #Read the config file.
 #
-config = configparser.ConfigParser()
+config = NoSectionConfigParser()
 config.read('pysens.conf')
 default = config['DEFAULT']
 #
@@ -70,7 +69,7 @@ else:
 #Set the simulation input file to be used.
 #
 if 'sim input files' in default:
-    siminputfiles = default['sim input files'].split(',')
+    siminputfiles = [x.strip() for x in default['sim input files'].split(',')]
     for fname in siminputfiles:
         if not os.path.isfile(fname):
             print("Error: the specified input file {} does not exist".format(fname))
@@ -82,7 +81,7 @@ else:
 #Set the multiplication factors to be used.
 #
 if 'factors' in default:
-    multfactors = default['factors'].split(',')
+    multfactors = [x.strip for x in default['factors'].split(',')]
 else:
     print("Error: at least one multiplication factor must be specified in the configuration file")
     sys.exit(1)
