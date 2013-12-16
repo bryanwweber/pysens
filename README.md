@@ -15,13 +15,11 @@ The `pysens.conf` file must either have `[DEFAULT]` on the first line, or one of
 options. No other text is supported on the first line. If options are given that aren't specified
 below, they will be ignored.
 
-The options are as follows, and can be specified by
+The options can be specified by:
     
-    option = value
-    
-or
-    
-    option : value
+    option = value or option : value
+
+The following options are available:
 
     reactions - The set of reactions to be analyzed. Can be one of:
                 all - use all of the reactions in the mechanism
