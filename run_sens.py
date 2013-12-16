@@ -159,6 +159,7 @@ if wantrxns == all:
     print("All {} reactions are considered in these analyses".format(numRxns))
 elif ',' in wantrxns and ':' in wantrxns:
     print("Error: use one of commas or colons to separate the wanted reactions")
+    sys.exit(1)
 elif ',' in wantrxns:
     wantreactions = [int(number) for number in wantrxns.split(',') if number]
     print("The reactions considered in these analyses are {}".format(wantreactions))
