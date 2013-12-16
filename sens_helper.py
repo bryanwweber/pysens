@@ -16,25 +16,6 @@ class NoSectionConfigParser(configparser.ConfigParser):
                 file = StringIO(text)
                 
             self.readfp(file,filename)
-
-
-def specRxnNum(rxnLines,lines,numRxns):
-##    print(lines)
-    specNum = []
-    startSpec = [r'H2O2\(34\)']
-    for j in range(len(startSpec)):
-##        print(startSpec[j])
-        specmatch = re.compile(startSpec[j])
-        for i in range(numRxns):
-            line = lines[rxnLines[i]]
-            if specmatch.search(line) is not None:
-                specNum.append(i+1)
-##                print(line,end='')
-
-##    print(len(specNum))
-    specNum = list(set(specNum))
-    print(len(specNum))
-    return specNum
 ###############################################################################
 def chebcheck(lines,rfac):
     """Take Chebychev auxiliary lines and return lines with modified a_(1,1)
