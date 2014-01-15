@@ -1,12 +1,32 @@
 Python wrapper for sensitivity analysis in CHEMKIN-Pro
 ==============
 
-This program runs a brute force, one-at-a-time sensitivity analysis of a given mechanism.
-The program is configured by setting options in the `pysens.conf` file. A sample `pysens.conf`
-is included in the distribution. The program can be run on Linux either by setting the
-executable bit and executing the program from the shell (e.g. `./run_sens.py`), or by calling
-`python3 run_sens.py`. On Windows, it should be run by `py run_sens.py` (Note: I haven't tested
-this on Windows).
+This program runs a brute force, one-at-a-time sensitivity analysis of the ignition delay for 
+a given mechanism. 
+
+Usage
+=====
+
+Download the repository by using git
+    
+    git clone git://github.com/bryanwweber/pysens.git
+    
+No other compilation is necessary. Python 3 is required. On Linux, this can be installed
+by either
+
+    apt-get install python3
+    yum install python3
+    ...
+
+depending on your distro. On Windows, Python 3 can be downloaded from the website:
+<http://www.python.org/download/>. 
+
+The runtime behavior of the script is configured by setting options in the `pysens.conf` file. A sample 
+`pysens.conf` is included in the distribution. 
+
+The script can be run on Linux either by setting the executable bit and executing the program 
+from the shell (e.g. `./run_sens.py`), or by calling `python3 run_sens.py`. On Windows, it 
+should be run by `py run_sens.py` (Note: I haven't tested this on Windows).
 
 `pysens.conf` options:
 ======================
