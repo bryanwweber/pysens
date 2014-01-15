@@ -4,6 +4,9 @@ import configparser
 from io import StringIO
 
 class NoSectionConfigParser(configparser.ConfigParser):
+    """
+    Subclass of ConfigParser that adds a [DEFAULT] header if one isn't present.
+    """
     def read(self,filename):
         try:
             text = open(filename).read()
