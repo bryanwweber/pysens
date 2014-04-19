@@ -13,29 +13,6 @@ from decimal import *
 from mechinterp import mechinterp
 from sens_helper import *
 
-###############################################################################
-#
-#These are the user input variables. The user should change each of them to
-#match their mechanism. `inputfilename` is the original chemistry file.
-#`thermfilename` is the file containing the thermo data, if necessary. If the
-#thermo data is included in the chemistry input file, this variable will not
-#be used. `numRxns` is the number of reactions in the mechanism. `multfactor` is
-#the multiplication factor for each reaction. `wantreaction` is a list of the
-#reaction numbers the user wishes to be analyzed. `sensfilenamebase` is the
-#base of the filename in which the comma-seperated output should be stored. The
-#rest of the filename is determined programatically based on the other inputs.
-#`siminputfile` is the file name of the file storing input information for the
-#simulation.
-#                                                                             
-#inputfilename = 'chem2.inp'
-#thermfilename = ''
-##numRxns = 27
-#multfactors = ['1']
-#wantreactions = [3]#[x+1 for x in range(numRxns)] 
-#sensfilenamebase = 'tignsens'
-#siminputfiles = ['test.inp']
-#                                                                             
-###############################################################################
 #
 #Read the config file.
 #
