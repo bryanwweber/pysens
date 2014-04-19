@@ -138,7 +138,7 @@ def main():
         wantrxns = default['reactions']
 
     if wantrxns == all:
-        wantreactions = [x+1 for x in range(numRxns)]
+        wantreactions = [x + 1 for x in range(numRxns)]
         print("All {} reactions are considered in these "
               "analyses".format(numRxns))
     elif ',' in wantrxns and ':' in wantrxns:
@@ -158,10 +158,10 @@ def main():
             spl = list(map(int, wantrxns.split(':')))
 
         if len(spl) == 2:
-            wantreactions = list(range(spl[0],spl[1]+1))
+            wantreactions = list(range(spl[0], spl[1] + 1))
         elif len(spl) == 3:
             if spl[1] >= 1:
-                wantreactions = list(range(spl[0],spl[2]+1,spl[1]))
+                wantreactions = list(range(spl[0], spl[2] + 1, spl[1]))
             else:
                 print("Error: the interval in the reactions specification "
                       "must be >= 1")
@@ -182,20 +182,20 @@ def main():
     chemoutput = 'chem.out'
     chemasc = 'chem.asc'
     totalCases = len(wantreactions)*len(siminputfiles)*len(multfactors)
-    for j,(inpfile,multfactor) in
-            enumerate(product(siminputfiles,multfactors)):
+    for (j, (inpfile, multfactor) in
+            enumerate(product(siminputfiles, multfactors))):
         csvoutput = (sensfilenamebase + '_' + inpfile.strip('.inp') + '_' +
             multfactor + 'x.csv')
-        with open(csvoutput,'at') as tignsens:
+        with open(csvoutput, 'at') as tignsens:
 
             # Loop through the reaction numbers in `wantreaction`. `i`
             # is the loop variable.
-            for i,wantreaction in enumerate(wantreactions):
+            for i, wantreaction in enumerate(wantreactions):
 
                 # Python is zero-based, so we have to subtract 1 from
                 # the numbers in `wantreaction` to properly find the
                 # index of the other lists
-                rxnNum = wantreaction-1
+                rxnNum = wantreaction - 1
 
                 # outLines is the list of lines to write to the chem.inp
                 # file to be run in the simulation. It needs to be reset
@@ -242,15 +242,15 @@ def main():
                     # compiled regular expression to auxcheck. `ret` is
                     # the returned list of modified lines.
                     if extraInfo[rxnNum] == 1:
-                        ret = auxcheck(sendLines,lowmatch,multfactor)
+                        ret = auxcheck(sendLines, lowmatch, multfactor)
                     elif extraInfo[rxnNum] == 2:
-                        ret = auxcheck(sendLines,highmatch,multfactor)
+                        ret = auxcheck(sendLines, highmatch, multfactor)
                     elif extraInfo[rxnNum] == 3:
-                        ret = auxcheck(sendLines,revmatch,multfactor)
+                        ret = auxcheck(sendLines, revmatch, multfactor)
                     elif extraInfo[rxnNum] == 4:
-                        ret = auxcheck(sendLines,plogmatch,multfactor)
+                        ret = auxcheck(sendLines, plogmatch, multfactor)
                     elif extraInfo[rxnNum] == 5:
-                        ret = chebcheck(sendLines,multfactor)
+                        ret = chebcheck(sendLines, multfactor)
 
                     # Loop through the returned lines and set the
                     # correct line in the `outLines` list to the
@@ -349,10 +349,10 @@ def main():
                 shutil.rmtree(chemfolder)
 
                 #Print to the screen some progress information.
-                caseNo = i+1 + j*len(wantreactions)
+                caseNo = i + 1 + j*len(wantreactions)
                 print('Case {0} of {1} \nReaction #: {2} \nIgnition Delay:'
-                      '{3}\nInput File: {4}\nFactor: {5}'.format(caseNo, 
-                      totalCases, rxnNum+1, ignDelay, inpfile,
+                      '{3}\nInput File: {4}\nFactor: {5}'.format(caseNo,
+                      totalCases, rxnNum + 1, ignDelay, inpfile,
                       multfactor)
                       )
 
