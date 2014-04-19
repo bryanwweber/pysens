@@ -34,7 +34,8 @@ def chebcheck(lines,rfac):
     """
     # Compile the regular expression to match the Chebychev `a`
     # coefficients and CHEB keyword.
-    Amatch = re.compile(r'(([-+]?[0-9]+(\.[0-9]+)?[eE][-+]?[0-9]+)|([0-9]+(\.[0-9]+)?))')
+    Amatch = re.compile(r'(([-+]?[0-9]+(\.[0-9]+)?[eE][-+]?[0-9]+)|'
+                        '([0-9]+(\.[0-9]+)?))')
     chebmatch = re.compile(r'(?i)^[\s]*CHEB')
 
     # Set a logical for whether or not we've found the first line with a
