@@ -58,7 +58,7 @@ The following options are available:
                         mech input file.
     
     outputfile - The base name of the output file. The full output file name will
-                 be set by concatentating outputfile + rfactor + sim input file.
+                 be set by concatenating outputfile + rfactor + sim input file.
                  
     factors - The multiplication factors to be considered. Multiple multiplication
               factors should be separated by commas.
