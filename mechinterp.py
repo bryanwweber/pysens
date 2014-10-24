@@ -4,7 +4,7 @@ def mechinterp(lines):
 
     INPUT:
     lines - list of strings, lines of the CHEMKIN format chemistry input file
-    numRxns - integer, number of reactions in the input mechanims
+    numRxns - integer, number of reactions in the input mechanisms
     OUTPUT:
     reacLines - list of integers, line numbers of reactions in the input set
                 of lines
@@ -51,7 +51,7 @@ def mechinterp(lines):
 
     # Begin a loop over all of the lines in the input file. The lines
     # are stored in the variable 'line' for each iteration.
-    for lineNum,line in enumerate(lines):
+    for lineNum, line in enumerate(lines):
 
         # We have to reverse the line to properly check for a reaction.
         # This eliminates the case where an auxiliary line may contain
