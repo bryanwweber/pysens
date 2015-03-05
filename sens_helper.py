@@ -5,11 +5,14 @@ from decimal import *
 import configparser
 from io import StringIO
 
+
 class NoSectionConfigParser(configparser.ConfigParser):
+
     """
     Subclass of ConfigParser that adds a [DEFAULT] header if one isn't present.
     """
-    def read(self,filename):
+
+    def read(self, filename):
         try:
             text = open(filename).read()
         except IOError:
@@ -20,9 +23,10 @@ class NoSectionConfigParser(configparser.ConfigParser):
             else:
                 file = StringIO(text)
 
-            self.readfp(file,filename)
-###############################################################################
-def chebcheck(lines,rfac):
+            self.readfp(file, filename)
+
+
+def chebcheck(lines, rfac):
     """Take Chebychev auxiliary lines and return lines with modified a_(1,1)
 
     INPUT:
@@ -74,9 +78,9 @@ def chebcheck(lines,rfac):
 
     # Return the list of modified lines
     return lines
-###############################################################################
-###############################################################################
-def auxcheck(lines,matchcond,rfac):
+
+
+def auxcheck(lines, matchcond, rfac):
     """Take auxiliary lines and return lines with modified Arrhenius coefficients.
 
     INPUT:
@@ -115,9 +119,10 @@ def auxcheck(lines,matchcond,rfac):
 
     # Return the list of modified lines
     return lines
-###############################################################################
-###############################################################################
+
+
 class cd:
+
     """Change directory.
 
     For use with the `with` keyword, i.e. `with cd(dir):` changes to the
@@ -137,4 +142,3 @@ class cd:
     def __exit__(self, etype, value, traceback):
         """Change back when the class is exited"""
         os.chdir(self.savedPath)
-###############################################################################

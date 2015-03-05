@@ -13,6 +13,7 @@ from decimal import *
 from mechinterp import mechinterp
 from sens_helper import *
 
+
 def main():
     # Read the configuration file.
     config = NoSectionConfigParser()
@@ -25,8 +26,8 @@ def main():
     if '$' in reactiondir:
         reactiondir = os.path.expandvars(reactiondir)
         if os.path.isdir(reactiondir):
-            reactor = os.path.join(reactiondir,'bin','CKReactorGenericClosed')
-            ckinterp = os.path.join(reactiondir,'bin','chem')
+            reactor = os.path.join(reactiondir, 'bin', 'CKReactorGenericClosed')
+            ckinterp = os.path.join(reactiondir, 'bin', 'chem')
             if not os.path.isfile(reactor) or not os.path.isfile(ckinterp):
                 print("Error: The reactor and CHEMKIN interpreter must "
                       "exist at CHEMKIN_ROOT/bin/")
@@ -68,7 +69,7 @@ def main():
               "specified in the configuration file")
         sys.exit(1)
 
-    #Set the base of the csv output file name.
+    # Set the base of the csv output file name.
     if 'outputfile' in default:
         sensfilenamebase = default['outputfile']
     else:
@@ -81,7 +82,7 @@ def main():
     newlinematch = re.compile(r'^\n')
 
     # The following regular expressions match the keywords we expect to
-    #see. The `(?i)` indicates case insensitive. For certain keywords,
+    # see. The `(?i)` indicates case insensitive. For certain keywords,
     # we want to match the keyword even if there is space at the
     # beginning of the line; these keywords have `^[\s]*`.
     lowmatch = re.compile(r'(?i)^[\s]*LOW')
@@ -101,7 +102,7 @@ def main():
         with open(inputfilename, 'rt') as inputfile:
             lines = inputfile.readlines()
     except UnicodeDecodeError:
-        with open(inputfilename,'rt', encoding='latin-1') as inputfile:
+        with open(inputfilename, 'rt', encoding='latin-1') as inputfile:
             lines = inputfile.readlines()
     else:
         print("Error: I can't decode the input file. Try saving it "
@@ -122,7 +123,7 @@ def main():
     if (not thermInChem and 'thermo input file' in default and
             os.path.isfile(default['thermo input file'])):
         thermfilename = default['thermo input file']
-    elif (not thermInChem and (not 'thermo input file' in default or not
+    elif (not thermInChem and ('thermo input file' not in default or not
             os.path.isfile(default['thermo input file']))):
         print("Error: the thermo file must be specified in the "
               "configuration file, and it must exist")
@@ -130,7 +131,7 @@ def main():
 
     # Set the reactions we want to work with.
     numRxns = len(reacLines)-1
-    if not 'reactions' in default:
+    if 'reactions' not in default:
         print("Error: the reactions to study must be specified in the "
               "configuration file")
         sys.exit(1)
@@ -280,7 +281,7 @@ def main():
                     shutil.copyfile(thermfilename, os.path.join(chemfolder,
                         thermfilename))
 
-                #Change directory into the simulation directory.
+                # Change directory into the simulation directory.
                 with cd(chemfolder):
 
                     # Set the filename for the modified chemistry input
@@ -305,7 +306,7 @@ def main():
                                         chemoutput, '-d', thermfilename, '-c',
                                         chemasc]
                                         )
-                    subprocess.call([reactor, '-i',inpfile, '-o',
+                    subprocess.call([reactor, '-i', inpfile, '-o',
                                     simoutputfile, 'Pro', '-c', chemasc]
                                     )
                     subprocess.call(['GetSolution', 'CKSolnList.txt',
@@ -322,7 +323,7 @@ def main():
                     # Find the columns with 'Ignition' in the title -
                     # these are the ignition delays. Then, convert the
                     # ignition delay to a float.
-                    ignCol = [x for x,val in enumerate(ignLines[0].split(','))
+                    ignCol = [x for x, val in enumerate(ignLines[0].split(','))
                               if 'Ignition' in val
                               ]
                     ignDelay = [float(k) for k in
@@ -337,7 +338,7 @@ def main():
                     # separated format and convert to a string. Then
                     # append a newline and print the list to the
                     # sensitivity output file.
-                    ignSens = [rxnNum + 1, multfactor,'','',
+                    ignSens = [rxnNum + 1, multfactor, '', '',
                                reacmatch.search(line).group(1).strip()
                                ]
                     ignSens[2:2] = ignDelay
@@ -348,7 +349,7 @@ def main():
                 # Remove the simulation directory.
                 shutil.rmtree(chemfolder)
 
-                #Print to the screen some progress information.
+                # Print to the screen some progress information.
                 caseNo = i + 1 + j*len(wantreactions)
                 print('Case {0} of {1} \nReaction #: {2} \nIgnition Delay:'
                       '{3}\nInput File: {4}\nFactor: {5}'.format(caseNo,

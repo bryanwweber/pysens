@@ -96,7 +96,7 @@ def mechinterp(lines):
         # The 'range' function automatically excludes the last number in
         # the range, which would be the next reaction, so there is no
         # need to subtract one from the second line number.
-        searchLines.append(list(range(reacLines[i]+1,reacLines[i+1])))
+        searchLines.append(list(range(reacLines[i]+1, reacLines[i+1])))
 
         # Loop over the line numbers in the previously appended (i.e.
         # last) element of 'searchLines' to look for auxiliary
