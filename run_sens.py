@@ -104,10 +104,6 @@ def main():
     except UnicodeDecodeError:
         with open(inputfilename, 'rt', encoding='latin-1') as inputfile:
             lines = inputfile.readlines()
-    else:
-        print("Error: I can't decode the input file. Try saving it "
-              "as UTF-8")
-        sys.exit(1)
 
     # Call the mechanism interpreter module. The mechinterp function
     # returns a tuple of lists plus a boolean. The lists contain the
