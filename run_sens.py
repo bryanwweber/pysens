@@ -134,7 +134,7 @@ def main():
     else:
         wantrxns = default['reactions']
 
-    if wantrxns == all:
+    if wantrxns == 'all':
         wantreactions = [x + 1 for x in range(numRxns)]
         print("All {} reactions are considered in these "
               "analyses".format(numRxns))
