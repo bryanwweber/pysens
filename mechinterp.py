@@ -83,7 +83,7 @@ def mechinterp(lines):
     # reaction. 'extraInfo' is a list of integers corresponding to each
     # type of reaction rate modification.
     searchLines = []
-    extraInfo = []
+    extraInfo = [0 for i in range(len(reacLines)-1)]
 
     # Begin loop to find and read all of the lines between each reaction
     # to check for auxiliary information.
@@ -121,19 +121,19 @@ def mechinterp(lines):
                 plogcond = plogmatch.search(line)
                 chebcond = chebmatch.search(line)
                 if lowcond is not None:
-                    extraInfo.append(1)
+                    extraInfo[i] = 1
                     break
                 elif highcond is not None:
-                    extraInfo.append(2)
+                    extraInfo[i] = 2
                     break
                 elif revcond is not None:
-                    extraInfo.append(3)
+                    extraInfo[i] = 3
                     break
                 elif plogcond is not None:
-                    extraInfo.append(4)
+                    extraInfo[i] = 4
                     break
                 elif chebcond is not None:
-                    extraInfo.append(5)
+                    extraInfo[i] = 5
                     break
 
     # Check if the thermo data is included in the chemistry. Store the
