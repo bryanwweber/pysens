@@ -179,9 +179,8 @@ def main():
     chemoutput = 'chem.out'
     chemasc = 'chem.asc'
     totalCases = len(wantreactions)*len(siminputfiles)*len(multfactors)
-    for (j, (inpfile, multfactor) in
-            enumerate(product(siminputfiles, multfactors))):
-        csvoutput = (sensfilenamebase + '_' + inpfile.strip('.inp') + '_' +
+    for j, (inpfile, multfactor) in enumerate(product(siminputfiles, multfactors)):
+        csvoutput = (sensfilenamebase + '_' + inpfile.rstrip('.inp') + '_' +
             multfactor + 'x.csv')
         with open(csvoutput, 'at') as tignsens:
 
@@ -217,8 +216,8 @@ def main():
                 # correct line in `outLines` to the modified line.
                 x = Decimal(Afactor.group(1))
                 x = Decimal(multfactor)*x
-                modline = line[:Afactor.start()] + str(x) +
-                    line[Afactor.end():]
+                modline = (line[:Afactor.start()] + str(x) +
+                    line[Afactor.end():])
                 outLines[reacLines[rxnNum]] = modline
 
                 # Check if there is auxiliary information for the
