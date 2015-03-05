@@ -6,11 +6,11 @@ def mechinterp(lines):
     lines - list of strings, lines of the CHEMKIN format chemistry input file
     numRxns - integer, number of reactions in the input mechanisms
     OUTPUT:
-    reacLines - list of integers, line numbers of reactions in the input set
+    reaction_lines - list of integers, line numbers of reactions in the input set
                 of lines
-    searchLines - list of lists of integers, line numbers of the lines between
+    search_lines - list of lists of integers, line numbers of the lines between
                   the reactions
-    extraInfo - list of integers, status of auxiliary information for a
+    extra_info - list of integers, status of auxiliary information for a
                 reaction
                     0 - no auxiliary information
                     1 - LOW parameter specified
@@ -18,7 +18,7 @@ def mechinterp(lines):
                     3 - REV reaction specified
                     4 - PLOG reaction specified
                     5 - CHEB reaction specified
-    thermInChem - boolean indicating the status of the thermodynamic data.
+    therm_in_chem - boolean indicating the status of the thermodynamic data.
                   False - thermo data is stored in a separate file
                   True - thermo data is stored in the chemistry file
 
@@ -41,17 +41,17 @@ def mechinterp(lines):
     chebmatch = re.compile(r'(?i)^[\s]*CHEB')
     thermmatch = re.compile(r'(?i)THERM ALL|THERMO ALL')
 
-    # Initialize 'reactionNum', a counter of the number of reactions,
-    # and 'reacLines', a zero-based list of the line numbers of the
+    # Initialize 'reaction_number', a counter of the number of reactions,
+    # and 'reaction_lines', a zero-based list of the line numbers of the
     # reactions in the input file. Set the 'numRxns' element of the
-    # 'reacLines' list to the number of lines in the input file so that
+    # 'reaction_lines' list to the number of lines in the input file so that
     # it can be used as a search parameter later.
-    reactionNum = 0
-    reacLines = []
+    reaction_number = 0
+    reaction_lines = []
 
     # Begin a loop over all of the lines in the input file. The lines
     # are stored in the variable 'line' for each iteration.
-    for lineNum, line in enumerate(lines):
+    for line_number, line in enumerate(lines):
 
         # We have to reverse the line to properly check for a reaction.
         # This eliminates the case where an auxiliary line may contain
@@ -67,42 +67,42 @@ def mechinterp(lines):
 
         # If the reaction condition contains information the line is a
         # reaction. Put the line number of this reaction in the
-        # 'reacLines' list, and increment the reaction counter. Remember
+        # 'reaction_lines' list, and increment the reaction counter. Remember
         # that since Python is zero-based, the real reaction number of a
         # reaction will be one more than the number from this loop
         if rxncond is not None:
-            reacLines.append(lineNum)
-            reactionNum += 1
+            reaction_lines.append(line_number)
+            reaction_number += 1
 
-    # Append the last line number to the reacLines list so that it can
-    # be used to determine the `searchLines` - see below.
-    reacLines.append(len(lines))
+    # Append the last line number to the reaction_lines list so that it can
+    # be used to determine the `search_lines` - see below.
+    reaction_lines.append(len(lines))
 
     # Initialize two lists to hold information about the reactions.
-    # 'searchLines' is a list of lists of the line numbers between each
-    # reaction. 'extraInfo' is a list of integers corresponding to each
+    # 'search_lines' is a list of lists of the line numbers between each
+    # reaction. 'extra_info' is a list of integers corresponding to each
     # type of reaction rate modification.
-    searchLines = []
-    extraInfo = [0 for i in range(len(reacLines)-1)]
+    search_lines = []
+    extra_info = [0 for i in range(len(reaction_lines)-1)]
 
     # Begin loop to find and read all of the lines between each reaction
     # to check for auxiliary information.
-    for i in range(len(reacLines)-1):
+    for i in range(len(reaction_lines)-1):
 
-        # Fill the ith element of 'searchLines' with a list of lines
+        # Fill the ith element of 'search_lines' with a list of lines
         # in the input file between the line number in the ith element
-        # of 'reacLines' and the line number in the (i+1)th element. Add
+        # of 'reaction_lines' and the line number in the (i+1)th element. Add
         # 1 to the first line number to avoid the reaction line itself.
         # The 'range' function automatically excludes the last number in
         # the range, which would be the next reaction, so there is no
         # need to subtract one from the second line number.
-        searchLines.append(list(range(reacLines[i]+1, reacLines[i+1])))
+        search_lines.append(list(range(reaction_lines[i]+1, reaction_lines[i+1])))
 
         # Loop over the line numbers in the previously appended (i.e.
-        # last) element of 'searchLines' to look for auxiliary
+        # last) element of 'search_lines' to look for auxiliary
         # information.
-        for lineNum in searchLines[-1]:
-            line = lines[lineNum]
+        for line_number in search_lines[-1]:
+            line = lines[line_number]
 
             # Check if the line is a comment or blank.
             blankcond = newlinematch.match(line)
@@ -114,37 +114,37 @@ def mechinterp(lines):
                 # 'HIGH', 'REV', 'PLOG', and 'CHEB' are mutually
                 # exclusive, so there should be no chance of a different
                 # type being present. Therefore, break out of the loop
-                # through `searchLines[i]` when a keyword is found.
+                # through `search_lines[i]` when a keyword is found.
                 lowcond = lowmatch.search(line)
                 highcond = highmatch.search(line)
                 revcond = revmatch.search(line)
                 plogcond = plogmatch.search(line)
                 chebcond = chebmatch.search(line)
                 if lowcond is not None:
-                    extraInfo[i] = 1
+                    extra_info[i] = 1
                     break
                 elif highcond is not None:
-                    extraInfo[i] = 2
+                    extra_info[i] = 2
                     break
                 elif revcond is not None:
-                    extraInfo[i] = 3
+                    extra_info[i] = 3
                     break
                 elif plogcond is not None:
-                    extraInfo[i] = 4
+                    extra_info[i] = 4
                     break
                 elif chebcond is not None:
-                    extraInfo[i] = 5
+                    extra_info[i] = 5
                     break
 
     # Check if the thermo data is included in the chemistry. Store the
-    # result in the `thermInChem` boolean, where `True` indicates that
+    # result in the `therm_in_chem` boolean, where `True` indicates that
     # no separate thermo file is required.
     for line in lines:
         if thermmatch.search(line) is not None:
-            thermInChem = True
+            therm_in_chem = True
             break
         else:
-            thermInChem = False
+            therm_in_chem = False
 
     # Return the output information
-    return reacLines, searchLines, extraInfo, thermInChem,
+    return reaction_lines, search_lines, extra_info, therm_in_chem,
