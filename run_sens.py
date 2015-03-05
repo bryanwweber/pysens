@@ -70,8 +70,8 @@ def main():
         sys.exit(1)
 
     # Set the base of the csv output file name.
-    if 'outputfile' in default:
-        sensfilenamebase = default['outputfile']
+    if 'output_file' in default:
+        sensfilenamebase = default['output_file']
     else:
         print("Error: the base of the csv output filename must be "
               "specified in the configuration file")
@@ -111,22 +111,22 @@ def main():
     # each reaction, and whether a reaction has auxiliary information.
     # The boolean checks whether the thermo data is available in the
     # chemistry file or if it should be taken from a separate file.
-    # These are stored, respectively, in `reacLines`, `searchLines`,
-    # `extraInfo` and `thermInChem`.
-    reacLines, searchLines, extraInfo, thermInChem, = mechinterp(lines)
+    # These are stored, respectively, in `reaction_lines`, `search_lines`,
+    # `extra_info` and `therm_in_chem`.
+    reaction_lines, search_lines, extra_info, therm_in_chem, = mechinterp(lines)
 
     # Set the thermo file, if necessary.
-    if (not thermInChem and 'thermo input file' in default and
+    if (not therm_in_chem and 'thermo input file' in default and
             os.path.isfile(default['thermo input file'])):
         thermfilename = default['thermo input file']
-    elif (not thermInChem and ('thermo input file' not in default or not
+    elif (not therm_in_chem and ('thermo input file' not in default or not
             os.path.isfile(default['thermo input file']))):
         print("Error: the thermo file must be specified in the "
               "configuration file, and it must exist")
         sys.exit(1)
 
     # Set the reactions we want to work with.
-    numRxns = len(reacLines)-1
+    number_of_reactions = len(reaction_lines)-1
     if 'reactions' not in default:
         print("Error: the reactions to study must be specified in the "
               "configuration file")
@@ -135,9 +135,9 @@ def main():
         wantrxns = default['reactions']
 
     if wantrxns == 'all':
-        wantreactions = [x + 1 for x in range(numRxns)]
+        wantreactions = [x + 1 for x in range(number_of_reactions)]
         print("All {} reactions are considered in these "
-              "analyses".format(numRxns))
+              "analyses".format(number_of_reactions))
     elif ',' in wantrxns and ':' in wantrxns:
         print("Error: use one of commas or colons to separate the wanted "
               "reactions")
@@ -150,7 +150,7 @@ def main():
     elif ':' in wantrxns:
         if wantrxns.endswith(':') or wantrxns.endswith('end'):
             spl = list(map(int, wantrxns.split(':')[:-1]))
-            spl.append(numRxns)
+            spl.append(number_of_reactions)
         else:
             spl = list(map(int, wantrxns.split(':')))
 
@@ -175,14 +175,14 @@ def main():
               "{}".format(wantreactions))
 
     # Set filenames of simulation and output files.
-    simoutputfile = 'test.out'
+    simoutput_file = 'test.out'
     chemoutput = 'chem.out'
     chemasc = 'chem.asc'
-    totalCases = len(wantreactions)*len(siminputfiles)*len(multfactors)
+    total_cases = len(wantreactions)*len(siminputfiles)*len(multfactors)
     for j, (inpfile, multfactor) in enumerate(product(siminputfiles, multfactors)):
         csvoutput = (sensfilenamebase + '_' + inpfile.rstrip('.inp') + '_' +
             multfactor + 'x.csv')
-        with open(csvoutput, 'at') as tignsens:
+        with open(csvoutput, 'at') as tignition_sens:
 
             # Loop through the reaction numbers in `wantreaction`. `i`
             # is the loop variable.
@@ -191,20 +191,20 @@ def main():
                 # Python is zero-based, so we have to subtract 1 from
                 # the numbers in `wantreaction` to properly find the
                 # index of the other lists
-                rxnNum = wantreaction - 1
+                reaction_number = wantreaction - 1
 
-                # outLines is the list of lines to write to the chem.inp
+                # output_lines is the list of lines to write to the chem.inp
                 # file to be run in the simulation. It needs to be reset
                 # on every loop or more than one reaction will be
                 # modified at a time. Python is "pointer-based", so we
-                # have to set `outLines` equal to a slice of `lines`,
+                # have to set `output_lines` equal to a slice of `lines`,
                 # the input list of lines (the slice happens to be the
                 # whole list).
-                outLines = lines[:]
+                output_lines = lines[:]
 
                 # Grab the line from the input file that matches the
                 # reaction we're working on.
-                line = lines[reacLines[rxnNum]]
+                line = lines[reaction_lines[reaction_number]]
 
                 # Find the Arrhenius coefficient on this line.
                 Afactor = Amatch.search(line)
@@ -213,50 +213,50 @@ def main():
                 # first matching string from the Afactor match. Multiply
                 # `x` by `multfactor`. Reassemble the modified reaction
                 # line with the new Arrhenius coefficient, and set the
-                # correct line in `outLines` to the modified line.
+                # correct line in `output_lines` to the modified line.
                 x = Decimal(Afactor.group(1))
                 x = Decimal(multfactor)*x
                 modline = (line[:Afactor.start()] + str(x) +
                     line[Afactor.end():])
-                outLines[reacLines[rxnNum]] = modline
+                output_lines[reaction_lines[reaction_number]] = modline
 
                 # Check if there is auxiliary information for the
                 # current reaction.
-                if extraInfo[rxnNum] > 0:
+                if extra_info[reaction_number] > 0:
 
                     # If there is auxiliary information, initialize a
                     # list for input lines that will be sent for
                     # modification. Then loop through the lines in the
-                    # searchLines list for the correct reaction number
+                    # search_lines list for the correct reaction number
                     # and construct the list to send for modification.
-                    sendLines = [0]*len(searchLines[rxnNum])
-                    for n in range(len(searchLines[rxnNum])):
-                        sendLines[n] = lines[searchLines[rxnNum][n]]
+                    send_lines = [0]*len(search_lines[reaction_number])
+                    for n in range(len(search_lines[reaction_number])):
+                        send_lines[n] = lines[search_lines[reaction_number][n]]
 
                     # If structure to check which type of auxiliary
                     # information is present and send the proper
                     # compiled regular expression to auxcheck. `ret` is
                     # the returned list of modified lines.
-                    if extraInfo[rxnNum] == 1:
-                        ret = auxcheck(sendLines, lowmatch, multfactor)
-                    elif extraInfo[rxnNum] == 2:
-                        ret = auxcheck(sendLines, highmatch, multfactor)
-                    elif extraInfo[rxnNum] == 3:
-                        ret = auxcheck(sendLines, revmatch, multfactor)
-                    elif extraInfo[rxnNum] == 4:
-                        ret = auxcheck(sendLines, plogmatch, multfactor)
-                    elif extraInfo[rxnNum] == 5:
-                        ret = chebcheck(sendLines, multfactor)
+                    if extra_info[reaction_number] == 1:
+                        ret = auxcheck(send_lines, lowmatch, multfactor)
+                    elif extra_info[reaction_number] == 2:
+                        ret = auxcheck(send_lines, highmatch, multfactor)
+                    elif extra_info[reaction_number] == 3:
+                        ret = auxcheck(send_lines, revmatch, multfactor)
+                    elif extra_info[reaction_number] == 4:
+                        ret = auxcheck(send_lines, plogmatch, multfactor)
+                    elif extra_info[reaction_number] == 5:
+                        ret = chebcheck(send_lines, multfactor)
 
                     # Loop through the returned lines and set the
-                    # correct line in the `outLines` list to the
+                    # correct line in the `output_lines` list to the
                     # modified lines.
-                    for n in range(len(searchLines[rxnNum])):
-                        outLines[searchLines[rxnNum][n]] = ret[n]
+                    for n in range(len(search_lines[reaction_number])):
+                        output_lines[search_lines[reaction_number][n]] = ret[n]
 
                 # Create a folder in which simulations will be run,
                 # after checking for its existence.
-                chemfolder = 'Reaction' + str(rxnNum + 1)
+                chemfolder = 'Reaction' + str(reaction_number + 1)
                 if not os.path.exists(chemfolder):
                     os.makedirs(chemfolder)
 
@@ -272,7 +272,7 @@ def main():
 
                 # If the thermo data is in the chemistry file, we don't
                 # have to copy therm.dat
-                if not thermInChem:
+                if not therm_in_chem:
                     shutil.copyfile(thermfilename, os.path.join(chemfolder,
                         thermfilename))
 
@@ -283,16 +283,16 @@ def main():
                     # file. Open the modified chemistry input file with
                     # write access, and write the file. This write is
                     # buffered. Close the modified chemistry input file.
-                    chemfilename = 'chem' + str(rxnNum + 1) + '.inp'
+                    chemfilename = 'chem' + str(reaction_number + 1) + '.inp'
                     with open(chemfilename, 'wt') as chemfile:
-                        for outLine in outLines:
+                        for outLine in output_lines:
                             chemfile.write(outLine)
 
                     # Call the CHEMKIN-Pro interpreter, then the solver,
                     # then the post-processor, then the transpose
                     # utility to create the solution .csv files. First
                     # check if we need the thermo file.
-                    if thermInChem:
+                    if therm_in_chem:
                         subprocess.call([ckinterp, '-i', chemfilename, '-o',
                                         chemoutput, '-c', chemasc]
                                         )
@@ -302,7 +302,7 @@ def main():
                                         chemasc]
                                         )
                     subprocess.call([reactor, '-i', inpfile, '-o',
-                                    simoutputfile, 'Pro', '-c', chemasc]
+                                    simoutput_file, 'Pro', '-c', chemasc]
                                     )
                     subprocess.call(['GetSolution', 'CKSolnList.txt',
                                     'XMLdata.zip']
@@ -312,17 +312,17 @@ def main():
                     # Open, read, and close the file with the solution
                     # information.
                     with open('CKSoln_solution_point_value_vs_solution_'
-                              'number.csv', 'r') as outputFile:
-                        ignLines = outputFile.readlines()
+                              'number.csv', 'r') as output_file:
+                        ignition_lines = output_file.readlines()
 
                     # Find the columns with 'Ignition' in the title -
                     # these are the ignition delays. Then, convert the
                     # ignition delay to a float.
-                    ignCol = [x for x, val in enumerate(ignLines[0].split(','))
+                    ignCol = [x for x, val in enumerate(ignition_lines[0].split(','))
                               if 'Ignition' in val
                               ]
-                    ignDelay = [float(k) for k in
-                                [ignLines[1].split(',')[x].strip() for x in
+                    ignition_delay = [float(k) for k in
+                                [ignition_lines[1].split(',')[x].strip() for x in
                                 ignCol]
                                 ]
 
@@ -333,13 +333,13 @@ def main():
                     # separated format and convert to a string. Then
                     # append a newline and print the list to the
                     # sensitivity output file.
-                    ignSens = [rxnNum + 1, multfactor, '', '',
+                    ignition_sens = [reaction_number + 1, multfactor, '', '',
                                reacmatch.search(line).group(1).strip()
                                ]
-                    ignSens[2:2] = ignDelay
-                    printsens = ','.join(map(str, ignSens))
-                    tignsens.write(printsens + '\n')
-                    tignsens.flush()
+                    ignition_sens[2:2] = ignition_delay
+                    printsens = ','.join(map(str, ignition_sens))
+                    tignition_sens.write(printsens + '\n')
+                    tignition_sens.flush()
 
                 # Remove the simulation directory.
                 shutil.rmtree(chemfolder)
@@ -348,7 +348,7 @@ def main():
                 caseNo = i + 1 + j*len(wantreactions)
                 print('Case {0} of {1} \nReaction #: {2} \nIgnition Delay:'
                       '{3}\nInput File: {4}\nFactor: {5}'.format(caseNo,
-                      totalCases, rxnNum + 1, ignDelay, inpfile,
+                      total_cases, reaction_number + 1, ignition_delay, inpfile,
                       multfactor)
                       )
 
