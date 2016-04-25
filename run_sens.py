@@ -63,7 +63,7 @@ def main():
 
     # Set the multiplication factors to be used.
     if 'factors' in default:
-        multfactors = [x.strip for x in default['factors'].split(',')]
+        multfactors = [x.strip() for x in default['factors'].split(',')]
     else:
         print("Error: at least one multiplication factor must be "
               "specified in the configuration file")
